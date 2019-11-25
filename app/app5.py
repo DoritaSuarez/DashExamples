@@ -53,7 +53,9 @@ app.layout = html.Div([
             ),
             html.Div(id='output-image-upload'),
         ]),
-        dcc.Tab(label='Seleccion de las areas', value='tab-2', style=tab_style, selected_style=tab_selected_style),
+        dcc.Tab(label='Seleccion de las areas', value='tab-2', style=tab_style, selected_style=tab_selected_style, children=[
+            html.Div(id='another-output-image-upload'),
+        ]),
         dcc.Tab(label='Seleccion dientes', value='tab-3', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Resultados', value='tab-4', style=tab_style, selected_style=tab_selected_style),
     ], style=tabs_styles),
@@ -77,6 +79,17 @@ def parse_contents(contents, filename, date):
     ])
 
 @app.callback(Output('output-image-upload', 'children'),
+              [Input('upload-image', 'contents')],
+              [State('upload-image', 'filename'),
+               State('upload-image', 'last_modified')])
+def update_output(list_of_contents, list_of_names, list_of_dates):
+    if list_of_contents is not None:
+        children = [
+            parse_contents(c, n, d) for c, n, d in
+            zip(list_of_contents, list_of_names, list_of_dates)]
+        return children
+
+@app.callback(Output('another-output-image-upload', 'children'),
               [Input('upload-image', 'contents')],
               [State('upload-image', 'filename'),
                State('upload-image', 'last_modified')])
