@@ -15,9 +15,6 @@ function readURL(input) {
         var reader = new FileReader();
 
         reader.onload = function (e) {
-            document.querySelector('img#prueba')
-                .setAttribute('src', e.target.result);
-
             document.querySelector('img#blah')
                 .setAttribute('src', e.target.result);
 
@@ -147,7 +144,8 @@ function renderizarMordida() {
         }
 
     };
-    image.src = 'assets/Samsung.png';
+
+    image.src = document.querySelector("img#mordida").src;
 }
 
 
@@ -188,7 +186,7 @@ function renderizarCuna() {
         }
 
     };
-    image.src = 'assets/Samsung.png';
+    image.src = document.querySelector("img#mordida").src;
 }
 
 function renderizarMedicion() {
@@ -228,7 +226,7 @@ function renderizarMedicion() {
         }
 
     };
-    image.src = 'assets/Samsung.png';
+    image.src = document.querySelector("img#mordida").src;
 }
 
 

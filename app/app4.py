@@ -70,8 +70,6 @@ class CustomDash(dash.Dash):
             </div>
         </div>
 
-        <img src="assets/tooth.svg" alt="" id="prueba">
-
         <div>
             <div class="row">
                 <div class="col-sm-4">
