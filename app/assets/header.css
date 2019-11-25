@@ -1,0 +1,103 @@
+@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro&display=swap");
+
+.cuerpo {
+    background-color: yellowgreen;
+}
+
+.logo {
+  display: flex;
+  float: left;
+  padding: 20px;
+  height: 4vw;
+}
+
+.barra {
+  background: white;
+  height: 6vw;
+  background-size: cover;
+}
+
+.fondo-texto {
+  background-color: rgba(0, 0, 0, 0.37);
+  height: 20vw;
+  width: 50vw;
+  margin-top: 10vw;
+}
+
+.titulo {
+  color: white;
+  padding: 10% 0 0 10%;
+  font-family: "Source Sans Pro", sans-serif;
+}
+
+.texto {
+  color: white;
+  font-size: 20px;
+  padding: 0 10% 0 10%;
+  font-family: "Source Sans Pro", sans-serif;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-column-gap: 10px;
+  padding: 150px 30px 0px 30px;
+}
+
+.grid-item1 {
+  height: 50vw;
+  background-color: rgba(39, 39, 39, 0.8);
+}
+
+.grid-item2 {
+  height: 50vw;
+}
+
+.primero {
+  background-color: teal;
+  /* height: 220px; */
+  padding: 10px;
+  max-width: 100%;
+}
+
+.segundo {
+  background-color: rgb(175, 175, 175);
+  height: 220px;
+  padding: 10px;
+}
+
+.tercero {
+  background-color: rgb(175, 175, 175);
+  height: 220px;
+  padding: 10px;
+}
+
+.imagenes {
+  max-width: 100%;
+}
+
+.docs-preview {
+  /* margin-right: -1rem; */
+  padding: 20px;
+}
+
+.img-preview {
+  float: left;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.img-preview > img {
+  max-width: 100%;
+}
+
+.preview-lg {
+  height: 9rem;
+  width: 16rem;
+}
+
