@@ -1,66 +1,168 @@
-import datetime
-
 import dash
-from dash.dependencies import Input, Output, State
-import dash_core_components as dcc
 import dash_html_components as html
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+class CustomDash(dash.Dash):
+    def interpolate_index(self, **kwargs):
+        # Inspect the arguments by printing them
+        print(kwargs)
+        return '''
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                <title>Document</title>
+                <!-- Hojas de estilo -->
+                <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+                    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+                <!-- Scripts -->
+                <script src="prueba.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css">
+                <link rel="stylesheet" href="assets/style_marks.css">
+                <link rel="stylesheet" href="assets/typography.css">
+                <title>My App</title>
+            </head>
+            <body>
+                <body>
+    <div>
 
-app.layout = html.Div([
-    dcc.Upload(
-        id='upload-image',
-        children=html.Div([
-            'Drag and Drop or ',
-            html.A('Select Files')
-        ]),
-        style={
-            'width': '100%',
-            'height': '60px',
-            'lineHeight': '60px',
-            'borderWidth': '1px',
-            'borderStyle': 'dashed',
-            'borderRadius': '5px',
-            'textAlign': 'center',
-            'margin': '10px'
-        },
-        # Allow multiple files to be uploaded
-        multiple=True
-    ),
-    html.Div(id='output-image-upload'),
-])
+        <div class="barra">
+            <img class="logo" src="assets/logo_CRI.png" alt="">
+            <img class="logo" src="assets/logo_Baylor.png" alt="">
+            <img class="logo" src="assets/logo_CES.png" alt="">
+        </div>
+
+        <div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm">
+                        <h1 class="text-primary"> Bienvenido </h1>
+                        <p class="text-secondary">
+                            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Provident enim ut nisi libero
+                            aspernatur consectetur pariatur tenetur maiores vel quia eos corrupti facilis, laboriosam
+                            itaque
+                            eius unde
+                            dolor magni molestiae.
+                        </p>
+                    </div>
+                    <div class="col-sm">
+                        <div class="container">
+                            <img id="blah" src="assets/tooth.svg" alt="your image" />
+                        </div>
+                    </div>
 
 
-def parse_contents(contents, filename, date):
-    return html.Div([
-        html.H5(filename),
-        html.H6(datetime.datetime.fromtimestamp(date)),
+                    <div class="col-sm">
+                        <div>
+                            <input type='file' onchange="readURL(this);" />
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="next()" class="btn btn-outline-primary">
+                        <a id="next">Continuar</a>
+                    </button>
+                </div>
 
-        # HTML images accept base64 encoded strings in the same format
-        # that is supplied by the upload
-        html.Img(src=contents),
-        html.Hr(),
-        html.Div('Raw Content'),
-        html.Pre(contents[0:200] + '...', style={
-            'whiteSpace': 'pre-wrap',
-            'wordBreak': 'break-all'
-        })
-    ])
+            </div>
+        </div>
+
+        <img src="assets/tooth.svg" alt="" id="prueba">
+
+        <div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="card card-twitter">
+                        <div class="card-cont" id= "mordidadiv">
+                            <img src="assets/tooth.svg" id="mordida" class="imagenes" alt="">
+                        </div>
+                    </div>
+                    <div id="ancho"></div>
+                    <div id="alto"></div>
+                    <div id="iniciox"></div>
+                    <div id="inicioy"></div>
+                </div>
+
+                <div class="col-sm-7">
+                    <h3 class="text-primary">Registro de Mordida</h3>
+                    <div class="text-secondary">
+                        A continuación selecciona el area correspondiente a la mordida, la cuña de medicion y la guia.
+                        <br>
+                        La cuña debe ser seleccionada casi en su totalidad.
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="card-cont">
+                                <canvas id="canvasMordida"></canvas>
+                            </div>
+                            <div>
+                                <button id="obtener" onclick="renderizarMordida()"
+                                    class="btn btn-outline-primary">Registrar
+                                    mordida</button>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card-cont">
+                                <canvas id="canvasCuna"></canvas>
+                            </div>
+                            <div>
+                                <button id="obtener" onclick="renderizarCuna()"
+                                    class="btn btn-outline-primary">Registrar
+                                    cuña</button>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card-cont">
+                                <canvas id="canvasMedicion"></canvas>
+                            </div>
+                            <div>
+                                <button id="obtener" onclick="renderizarMedicion()"
+                                    class="btn btn-outline-primary">Registrar
+                                    Medicion</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cat">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+
+        <script>
 
 
-@app.callback(Output('output-image-upload', 'children'),
-              [Input('upload-image', 'contents')],
-              [State('upload-image', 'filename'),
-               State('upload-image', 'last_modified')])
-def update_output(list_of_contents, list_of_names, list_of_dates):
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n, d) for c, n, d in
-            zip(list_of_contents, list_of_names, list_of_dates)]
-        return children
+        </script>
+    </div>
+                <div id="custom-header">My custom header</div>
+                {app_entry}
+                {config}
+                {scripts}
+                {renderer}
+                <div id="custom-footer">My custom footer</div>
+            </body>
+        </html>
+        '''.format(
+            app_entry=kwargs['app_entry'],
+            config=kwargs['config'],
+            scripts=kwargs['scripts'],
+            renderer=kwargs['renderer'])
 
+app = CustomDash()
+
+app.layout = html.Div('Simple Dash App')
 
 if __name__ == '__main__':
     app.run_server(debug=True)

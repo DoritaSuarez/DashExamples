@@ -5,13 +5,9 @@ import pandas as pd
 import plotly.graph_objs as go
 from dash.dependencies import Input,Output
 
-
-
 # Use the 'Cars' dataset
 
 cars = pd.read_csv('https://gist.githubusercontent.com/seankross/a412dfbd88b3db70b74b/raw/5f23f993cd87c283ce766e7ac6b329ee7cc2e1d1/mtcars.csv')
-
-
 
 # Build simple Dash Layout
 

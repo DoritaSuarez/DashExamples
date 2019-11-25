@@ -1,0 +1,38 @@
+.logo {
+  display: flex;
+  float: right;
+  padding: 20px;
+  height: 6.5vw;
+}
+
+.barra {
+  background: white;
+  height: 10vw;
+  background-size: cover;
+}
+
+.fondo-texto {
+  background-color: rgba(0, 0, 0, 0.37);
+  height: 20vw;
+  width: 40vw;
+  margin-top: 10vw;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  text-justify: center;
+  background-color: rgb(255, 255, 255);
+}
+
+img{
+  max-width:20vw;
+}
+
+input[type=file]{
+padding-top:-100px;
+/* background:#2d2d2d; */
+position: absolute;
+bottom:0;
+left:0;
+}

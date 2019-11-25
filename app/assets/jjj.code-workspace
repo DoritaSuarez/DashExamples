@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "C:\\Users\\diant\\Documents\\Trabajo\\Proyecto Contactos\\web"
+		},
+		{
+			"path": "C:\\Users\\diant\\Documents\\Contactos\\vanilla-image-cropper-master\\docs"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "web"
+	}
+}
