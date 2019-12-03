@@ -2,8 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5132808a-d6a9-473a-9672-39e55688fa46" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/app/app5.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app2.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/app6.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/tabsmemory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/app5.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app5.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/assets/prueba.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/assets/prueba.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/assets/script.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/assets/script2.js" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,9 +28,15 @@
   </component>
   <component name="ProjectId" id="1U5l1VcjPb61lawiIigBflYWIOZ" />
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../CURSOS TOMADOS/DS4A/Week 4/extended_case_4_student/extended_case_4_student" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\Miguel Orjuela\PROYECTOS\CES App\DashExamples\app\assets" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -49,7 +60,11 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1574654121957</updated>
-      <workItem from="1574654125238" duration="4095000" />
+      <workItem from="1574654125238" duration="9287000" />
+      <workItem from="1574732422726" duration="670000" />
+      <workItem from="1574900617192" duration="13828000" />
+      <workItem from="1575177775350" duration="14208000" />
+      <workItem from="1575259791703" duration="11633000" />
     </task>
     <servers />
   </component>
@@ -61,7 +76,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>

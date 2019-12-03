@@ -1,4 +1,6 @@
-// import Cropper from 'cropperjs';
+// var scriptCrop = document.createElement('script');
+// scriptCrop.setAttribute('src','https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js');
+// document.head.appendChild(scriptCrop);
 
 var alto = 0;
 var ancho = 0;
@@ -8,39 +10,15 @@ const inicioY = 0;
 var input = false
 var srcExt = "Samsung.png"
 
+
 function readURL(input) {
-    if (input.files && input.files[0]) {
-        this.input = true;
-
-        var reader = new FileReader();
-
-        reader.onload = function (e) {
-            document.querySelector('img#blah')
-                .setAttribute('src', e.target.result);
-
-            console.log("Aqui se carga la mordida");
-            // setTimeout(()=>{                
-                document.querySelector('img#mordida')
-                    .setAttribute('src', e.target.result);
-                setTimeout(() => {
-                    crop = document.querySelector("#mordida")
-                    var cropper = new Cropper(crop, options);
-                    data = cropper.getCropBoxData()
-                    var sale = this.cropper.getCroppedCanvas().toDataURL('image/png')
-                    console.log(sale)
-                
-                    console.log(cropper)
-                    console.log(data)
-                }, 100)
-                
-            // }, 100)
-            console.log("Asignado");
-        };
-
-        this.srcExt = this.src
-
-        reader.readAsDataURL(input.files[0]);
-    }
+    setTimeout(() => {
+        crop = document.querySelector("#mordida")
+        var cropper = new Cropper(crop, options);
+        data = cropper.getCropBoxData()
+        console.log(cropper)
+        console.log(data)
+    }, 100)
 }
 
 setTimeout(() => {
