@@ -26,7 +26,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -59,7 +59,7 @@
       <workItem from="1574732422726" duration="670000" />
       <workItem from="1574900617192" duration="13828000" />
       <workItem from="1575177775350" duration="14208000" />
-      <workItem from="1575259791703" duration="21486000" />
+      <workItem from="1575259791703" duration="26032000" />
     </task>
     <servers />
   </component>
