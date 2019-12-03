@@ -7,6 +7,8 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import visdcc
 
+from PIL import Image, ImageOps, ImageChops, ImageFilter
+
 # external JavaScript files
 external_scripts = [
     'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js',
@@ -35,7 +37,7 @@ external_stylesheets = [
     'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css'
 ]
 
-app = dash.Dash(__name__,  external_scripts=external_scripts, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__, external_scripts=external_scripts, external_stylesheets=external_stylesheets)
 
 table_header = [
     html.Thead(html.Tr([html.Th("Dato"), html.Th("Valor"), html.Th("Confirmar valor")]))
@@ -61,6 +63,10 @@ row4 = html.Tr([html.Td("Inicio Y"),
 table_body = [html.Tbody([row1, row2, row3, row4])]
 
 table = dbc.Table(table_header + table_body, bordered=True)
+
+image = Image.open('E:\Miguel Orjuela\PROYECTOS\CES App\Samsung.jpg')
+image_bw = image.convert(mode="L")  # Transform to black and white
+# print(image_bw.size) # [0]: width in pixels [1]: height in pixels
 
 app.layout = html.Div([
     dcc.Store(id='memory-output'),
@@ -113,9 +119,10 @@ app.layout = html.Div([
                                             width=8,
                                         ),
                                         dbc.Col([
-                                            dbc.Button("Habilitar cropper", id='cropper-enable' ,color="secondary", className="mr-1", block=True),
+                                            dbc.Button("Habilitar cropper", id='cropper-enable', color="secondary",
+                                                       className="mr-1", block=True),
                                             visdcc.Run_js(id='enablecropjs'),
-                                            ],
+                                        ],
                                             width=4,
                                         ),
                                     ]),
@@ -131,15 +138,18 @@ app.layout = html.Div([
                                     html.H6('Tipo de área a especificar'),
                                     dbc.Row([
                                         dbc.Col([
-                                            dbc.Button("Mordida", id='btn-mordida', color="primary", className="mr-1", block=True),
+                                            dbc.Button("Mordida", id='btn-mordida', color="primary", className="mr-1",
+                                                       block=True),
                                             visdcc.Run_js(id='mordidajs'),
                                         ]),
                                         dbc.Col([
-                                            dbc.Button("Cuña de medición", id='btn-cuna', color="primary", className="mr-1", block=True),
+                                            dbc.Button("Cuña de medición", id='btn-cuna', color="primary",
+                                                       className="mr-1", block=True),
                                             visdcc.Run_js(id='cunajs'),
                                         ]),
                                         dbc.Col([
-                                            dbc.Button("Guía", color="primary", id='btn-guia', className="mr-1", block=True),
+                                            dbc.Button("Guía", color="primary", id='btn-guia', className="mr-1",
+                                                       block=True),
                                             visdcc.Run_js(id='guiajs'),
                                         ]),
                                     ]),
@@ -188,23 +198,13 @@ app.layout = html.Div([
         ]),
         dcc.Tab(label='Paso #3', children=[
             html.Div([
-                html.H1("This is the content in tab 3"),
-                html.Div(id='mordida-seleccion-multiareas'),
-                html.H1("Holita", id='coord-x-ftw'),
-                dcc.Graph(
-                    id='example-graph',
-                    figure={
-                        'data': [
-                            {'x': [1, 2, 3], 'y': [4, 1, 2],
-                             'type': 'bar', 'name': 'SF'},
-                            {'x': [1, 2, 3], 'y': [2, 4, 5],
-                             'type': 'bar', 'name': u'Montréal'},
-                        ],
-                        'layout': {
-                            'title': 'Dash Data Visualization'
-                        }
-                    }
-                )
+                html.H3('Paso #3'),
+                html.H2('Cálculos y configuración de áreas para análisis de profundidad.'),
+                html.P('A continuación se imprimen gráficos de prueba para verificar el proceso.'),
+                # TODO: Imprimir print(image_bw.size)
+                html.P("Table placeholder", id='coord-x-ftw'),
+                html.H4("Dimensiones de la imagen"),
+                html.P(image_bw.size),
             ])
         ]),
         dcc.Tab(label='Paso #4', children=[
@@ -257,7 +257,6 @@ def parse_contents(contents, filename, date):
             ),
         ]),
 
-
         # HTML images accept base64 encoded strings in the same format
         # that is supplied by the upload
         # html.Img(src=contents),
@@ -275,10 +274,28 @@ def parse_contents_to_cropper(contents, filename, date):
         html.Img(id='mordida', src=contents)
     ])
 
+
 @app.callback(Output('coord-x-ftw', 'children'),
-              [Input('ancho-input', 'value')])
-def updateholita(value):
-    return html.Div('Holita'+str(value))
+              [Input('ancho-input', 'value'),
+               Input('alto-input', 'value'),
+               Input('iniciox-input', 'value'),
+               Input('inicioy-input', 'value'),
+               ])
+def updateholita(a, b, c, d):
+
+    atable_header = [
+        html.Thead(html.Tr([html.Th("Coordenada"), html.Th("Valor")]))
+    ]
+
+    arow1 = html.Tr([html.Td("ancho"), html.Td(a)])
+    arow2 = html.Tr([html.Td("alto"), html.Td(b)])
+    arow3 = html.Tr([html.Td("iniciox"), html.Td(c)])
+    arow4 = html.Tr([html.Td("inicioy"), html.Td(d)])
+
+    atable_body = [html.Tbody([arow1, arow2, arow3, arow4])]
+
+    return dbc.Table(atable_header + atable_body, bordered=True)
+
 
 @app.callback(Output('output-image-upload', 'children'),
               [Input('upload-image', 'contents')],
@@ -312,6 +329,7 @@ def myfun(x):
         return "readURL();"
     return ""
 
+
 @app.callback(
     Output('mordidajs', 'run'),
     [Input('btn-mordida', 'n_clicks')])
@@ -320,13 +338,15 @@ def myfun(x):
         return "renderizarMordida();"
     return ""
 
-@app.callback(
-    Output('mordida-seleccion-multiareas', 'children'),
-    [Input('btn-mordida', 'n_clicks')])
-def myfun(x):
-    if x:
-        return "console.log('Aca deberia mandar a la tercera página');"
-    return ""
+
+# @app.callback(
+#     Output('mordida-seleccion-multiareas', 'children'),
+#     [Input('btn-mordida', 'n_clicks')])
+# def myfun(x):
+#     if x:
+#         return "console.log('Este es el banner que sale cuando se le da a btn-mordida');"
+#     return ""
+
 
 @app.callback(
     Output('cunajs', 'run'),
@@ -336,6 +356,7 @@ def myfun(x):
         return "renderizarCuna();"
     return ""
 
+
 @app.callback(
     Output('guiajs', 'run'),
     [Input('btn-guia', 'n_clicks')])
@@ -343,6 +364,7 @@ def myfun(x):
     if x:
         return "renderizarMedicion();"
     return ""
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
