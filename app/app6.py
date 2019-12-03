@@ -37,7 +37,33 @@ external_stylesheets = [
 
 app = dash.Dash(__name__,  external_scripts=external_scripts, external_stylesheets=external_stylesheets)
 
+table_header = [
+    html.Thead(html.Tr([html.Th("Dato"), html.Th("Valor"), html.Th("Confirmar valor")]))
+]
+
+row1 = html.Tr([html.Td("Ancho"),
+                html.Td(html.Div(id='ancho')),
+                html.Td(dcc.Input(id='ancho-input', type='text', value=''))
+                ])
+row2 = html.Tr([html.Td("Alto"),
+                html.Td(html.Div(id='alto')),
+                html.Td(dcc.Input(id='alto-input', type='text', value=''))
+                ])
+row3 = html.Tr([html.Td("Inicio X"),
+                html.Td(html.Div(id='iniciox')),
+                html.Td(dcc.Input(id='iniciox-input', type='text', value=''))
+                ])
+row4 = html.Tr([html.Td("Inicio Y"),
+                html.Td(html.Div(id='inicioy')),
+                html.Td(dcc.Input(id='inicioy-input', type='text', value=''))
+                ])
+
+table_body = [html.Tbody([row1, row2, row3, row4])]
+
+table = dbc.Table(table_header + table_body, bordered=True)
+
 app.layout = html.Div([
+    dcc.Store(id='memory-output'),
     html.H1('Análisis de Contactos Oclusales', style={
         'textAlign': 'center', 'margin': '48px 0', 'fontFamily': 'system-ui'}),
     dcc.Tabs(id="tabs", children=[
@@ -97,14 +123,12 @@ app.layout = html.Div([
                                 dbc.CardBody(
                                     [
                                         html.Div(id='image-to-crop'),
-                                        html.Div(id='ancho'),
-                                        html.Div(id='alto'),
-                                        html.Div(id='iniciox'),
-                                        html.Div(id='inicioy'),
                                     ]
                                 ),
                                 dbc.CardFooter([
-                                    html.P('Tipo de área a especificar'),
+                                    html.H6('Datos del cropper'),
+                                    table,
+                                    html.H6('Tipo de área a especificar'),
                                     dbc.Row([
                                         dbc.Col([
                                             dbc.Button("Mordida", id='btn-mordida', color="primary", className="mr-1", block=True),
@@ -166,6 +190,7 @@ app.layout = html.Div([
             html.Div([
                 html.H1("This is the content in tab 3"),
                 html.Div(id='mordida-seleccion-multiareas'),
+                html.H1("Holita", id='coord-x-ftw'),
                 dcc.Graph(
                     id='example-graph',
                     figure={
@@ -250,6 +275,10 @@ def parse_contents_to_cropper(contents, filename, date):
         html.Img(id='mordida', src=contents)
     ])
 
+@app.callback(Output('coord-x-ftw', 'children'),
+              [Input('ancho-input', 'value')])
+def updateholita(value):
+    return html.Div('Holita'+str(value))
 
 @app.callback(Output('output-image-upload', 'children'),
               [Input('upload-image', 'contents')],

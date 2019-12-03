@@ -66,10 +66,10 @@ var options = {
         this.inicioY = event.detail.y;
         this.ancho = event.detail.width;
         this.alto = event.detail.height;
-        document.querySelector("div#ancho").innerText = event.detail.width.toString()
-        document.querySelector("div#alto").innerText = event.detail.height.toString()
-        document.querySelector("div#iniciox").innerText = event.detail.x.toString()
-        document.querySelector("div#inicioy").innerText = event.detail.y.toString()
+        document.querySelector("div#ancho").innerHTML = event.detail.width.toString()
+        document.querySelector("div#alto").innerHTML = event.detail.height.toString()
+        document.querySelector("div#iniciox").innerHTML = event.detail.x.toString()
+        document.querySelector("div#inicioy").innerHTML = event.detail.y.toString()
         // console.log("InicioX", this.inicioX)
     }
 };
