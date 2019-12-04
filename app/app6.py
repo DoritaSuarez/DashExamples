@@ -448,6 +448,18 @@ def updateholita(a, b, c, d):
     return dbc.Table(atable_header + atable_body, bordered=True)
 
 
+def calculate_dogs(a, b, c, d):
+    ia, ib, ic, idd = 0, 0, 0, 0
+    if all(w != '' for w in [a, b, c, d]):
+        ia = float(a)
+        ib = float(b)
+        ic = float(c)
+        idd = float(d)
+        if all(v is not None for v in [ia, ib, ic, idd]):
+            return calculate_everything(ia, ib, ic, idd)
+    return html.Div("Nodata")
+
+
 @app.callback(Output('calculate-everything-output', 'children'),
               [Input('submit-button', 'n_clicks')],
               [State('ancho-input', 'value'),
@@ -456,7 +468,7 @@ def updateholita(a, b, c, d):
                State('inicioy-input', 'value'),
                ])
 def update_coordenates(n_clicks, a, b, c, d):
-    return calculate_everything(float(a), float(b), float(c), float(d))
+    return calculate_dogs(a, b, c, d)
 
 
 @app.callback(Output('output-image-upload', 'children'),
