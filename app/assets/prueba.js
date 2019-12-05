@@ -4,8 +4,10 @@
 
 var alto = 0;
 var ancho = 0;
-const inicioX = 0;
-const inicioY = 0;
+var inicioX = 0;
+var inicioY = 0;
+var finX = 0;
+var finY = 0;
 
 var input = false
 var srcExt = "Samsung.png"
@@ -60,16 +62,19 @@ var options = {
         console.log(e.type, e.detail.ratio);
     },
     crop(event) {
-        this.inicioX = event.detail.x;
-        // console.log(this.inicioX)
-        console.log(event.detail.x)
-        this.inicioY = event.detail.y;
-        this.ancho = event.detail.width;
-        this.alto = event.detail.height;
-        document.querySelector("div#ancho").innerHTML = event.detail.width.toString()
-        document.querySelector("div#alto").innerHTML = event.detail.height.toString()
-        document.querySelector("div#iniciox").innerHTML = event.detail.x.toString()
-        document.querySelector("div#inicioy").innerHTML = event.detail.y.toString()
+        this.inicioX = Math.round(event.detail.x                        )   ;
+        this.inicioY = Math.round(event.detail.y                        )   ;
+        this.ancho   = Math.round(event.detail.width                    )   ;
+        this.alto    = Math.round(event.detail.height                   )   ;
+        this.finX    = Math.round((event.detail.width + event.detail.x) )   ;
+        this.finY    = Math.round((event.detail.height + event.detail.y))   ;
+
+        document.querySelector("div#ancho").innerHTML = this.ancho.toString()
+        document.querySelector("div#alto").innerHTML = this.alto.toString()
+        document.querySelector("div#iniciox").innerHTML = this.inicioX.toString()
+        document.querySelector("div#inicioy").innerHTML = this.inicioY.toString()
+        document.querySelector("div#finx").innerHTML = this.finX.toString()
+        document.querySelector("div#finy").innerHTML = this.finY.toString()
         // console.log("InicioX", this.inicioX)
     }
 };

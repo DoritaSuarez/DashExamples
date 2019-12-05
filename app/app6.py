@@ -49,11 +49,11 @@ table_header = [
 row1 = html.Tr([html.Td("Ancho"),
                 html.Td(html.Div(id='ancho')),
                 html.Td(dcc.Input(id='ancho-input', type='text', value=''))
-                ])
+                ], hidden=True)
 row2 = html.Tr([html.Td("Alto"),
                 html.Td(html.Div(id='alto')),
                 html.Td(dcc.Input(id='alto-input', type='text', value=''))
-                ])
+                ], hidden=True)
 row3 = html.Tr([html.Td("Inicio X"),
                 html.Td(html.Div(id='iniciox')),
                 html.Td(dcc.Input(id='iniciox-input', type='text', value=''))
@@ -62,8 +62,16 @@ row4 = html.Tr([html.Td("Inicio Y"),
                 html.Td(html.Div(id='inicioy')),
                 html.Td(dcc.Input(id='inicioy-input', type='text', value=''))
                 ])
+row5 = html.Tr([html.Td("Fin X"),
+                html.Td(html.Div(id='finx')),
+                html.Td(dcc.Input(id='finx-input', type='text', value=''))
+                ])
+row6 = html.Tr([html.Td("Fin Y"),
+                html.Td(html.Div(id='finy')),
+                html.Td(dcc.Input(id='finy-input', type='text', value=''))
+                ])
 
-table_body = [html.Tbody([row1, row2, row3, row4])]
+table_body = [html.Tbody([row1, row2, row3, row4, row5, row6])]
 
 table = dbc.Table(table_header + table_body, bordered=True)
 
@@ -350,9 +358,14 @@ app.layout = html.Div([
                 html.H3('Paso #3'),
                 html.H2('Cálculos y configuración de áreas para análisis de profundidad.'),
                 html.P('A continuación se imprimen gráficos de prueba para verificar el proceso.'),
-                html.P("Table placeholder", id='coord-x-ftw'),
+                html.H4("Selección mordida"),
+                html.P("Resultados de selección en MORDIDA", id='table-mordida'),
+                html.H4("Selección cuña"),
+                html.P("Resultados de selección en MORDIDA", id='table-cuna'),
+                html.H4("Selección guia"),
+                html.P("Resultados de selección en MORDIDA", id='table-guia'),
                 html.H4("Dimensiones de la imagen"),
-                html.P(image_bw.size),
+                html.P(str(image_bw.size[0]) + 'x' + str(image_bw.size[1])),
                 html.Button(id='submit-button', n_clicks=0, children='Submit'),
                 html.Div(id='calculate-everything-output'),
                 # TODO: Por aquí vamos
@@ -427,21 +440,66 @@ def parse_contents_to_cropper(contents, filename, date):
     ])
 
 
-@app.callback(Output('coord-x-ftw', 'children'),
-              [Input('ancho-input', 'value'),
-               Input('alto-input', 'value'),
-               Input('iniciox-input', 'value'),
-               Input('inicioy-input', 'value'),
+@app.callback(Output('table-mordida', 'children'),
+              [Input('btn-mordida', 'n_clicks')],
+              [State('iniciox-input', 'value'),
+               State('inicioy-input', 'value'),
+               State('finx-input', 'value'),
+               State('finy-input', 'value'),
                ])
-def updateholita(a, b, c, d):
+def update_table_mordida(n_clicks, a, b, c, d):
     atable_header = [
         html.Thead(html.Tr([html.Th("Coordenada"), html.Th("Valor")]))
     ]
 
-    arow1 = html.Tr([html.Td("ancho"), html.Td(a)])
-    arow2 = html.Tr([html.Td("alto"), html.Td(b)])
-    arow3 = html.Tr([html.Td("iniciox"), html.Td(c)])
-    arow4 = html.Tr([html.Td("inicioy"), html.Td(d)])
+    arow1 = html.Tr([html.Td("Inicio X"), html.Td(a)])
+    arow2 = html.Tr([html.Td("Inicio Y"), html.Td(b)])
+    arow3 = html.Tr([html.Td("Fin X"), html.Td(c)])
+    arow4 = html.Tr([html.Td("Fin Y"), html.Td(d)])
+
+    atable_body = [html.Tbody([arow1, arow2, arow3, arow4])]
+
+    return dbc.Table(atable_header + atable_body, bordered=True)
+
+
+@app.callback(Output('table-cuna', 'children'),
+              [Input('btn-cuna', 'n_clicks')],
+              [State('iniciox-input', 'value'),
+               State('inicioy-input', 'value'),
+               State('finx-input', 'value'),
+               State('finy-input', 'value'),
+               ])
+def update_table_cuna(n_clicks, a, b, c, d):
+    atable_header = [
+        html.Thead(html.Tr([html.Th("Coordenada"), html.Th("Valor")]))
+    ]
+
+    arow1 = html.Tr([html.Td("Inicio X"), html.Td(a)])
+    arow2 = html.Tr([html.Td("Inicio Y"), html.Td(b)])
+    arow3 = html.Tr([html.Td("Fin X"), html.Td(c)])
+    arow4 = html.Tr([html.Td("Fin Y"), html.Td(d)])
+
+    atable_body = [html.Tbody([arow1, arow2, arow3, arow4])]
+
+    return dbc.Table(atable_header + atable_body, bordered=True)
+
+
+@app.callback(Output('table-guia', 'children'),
+              [Input('btn-guia', 'n_clicks')],
+              [State('iniciox-input', 'value'),
+               State('inicioy-input', 'value'),
+               State('finx-input', 'value'),
+               State('finy-input', 'value'),
+               ])
+def update_table_guia(n_clicks, a, b, c, d):
+    atable_header = [
+        html.Thead(html.Tr([html.Th("Coordenada"), html.Th("Valor")]))
+    ]
+
+    arow1 = html.Tr([html.Td("Inicio X"), html.Td(a)])
+    arow2 = html.Tr([html.Td("Inicio Y"), html.Td(b)])
+    arow3 = html.Tr([html.Td("Fin X"), html.Td(c)])
+    arow4 = html.Tr([html.Td("Fin Y"), html.Td(d)])
 
     atable_body = [html.Tbody([arow1, arow2, arow3, arow4])]
 
@@ -462,10 +520,10 @@ def calculate_dogs(a, b, c, d):
 
 @app.callback(Output('calculate-everything-output', 'children'),
               [Input('submit-button', 'n_clicks')],
-              [State('ancho-input', 'value'),
-               State('alto-input', 'value'),
-               State('iniciox-input', 'value'),
+              [State('iniciox-input', 'value'),
                State('inicioy-input', 'value'),
+               State('finx-input', 'value'),
+               State('finy-input', 'value'),
                ])
 def update_coordenates(n_clicks, a, b, c, d):
     return calculate_dogs(a, b, c, d)
@@ -511,15 +569,6 @@ def myfun(x):
     if x:
         return "renderizarMordida();"
     return ""
-
-
-# @app.callback(
-#     Output('mordida-seleccion-multiareas', 'children'),
-#     [Input('btn-mordida', 'n_clicks')])
-# def myfun(x):
-#     if x:
-#         return "console.log('Este es el banner que sale cuando se le da a btn-mordida');"
-#     return ""
 
 
 @app.callback(
