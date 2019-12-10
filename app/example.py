@@ -415,6 +415,7 @@ def update_selection_mode(selection_mode, figure):
         figure["layout"]["dragmode"] = selection_mode
     return figure
 
+
 @app.callback(
     Output("graph-histogram-colors", "figure"), [Input("interactive-image", "figure")]
 )
