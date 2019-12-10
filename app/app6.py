@@ -6,11 +6,16 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import visdcc
+import importlib
 
 from PIL import Image, ImageOps, ImageChops, ImageFilter
 import numpy as np
 import cv2
 import pandas as pd
+
+drc = importlib.import_module("dash_reusable_components")
+utils = importlib.import_module("utils")
+
 
 # external JavaScript files
 external_scripts = [
@@ -40,10 +45,12 @@ external_stylesheets = [
     'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css'
 ]
 
-app = dash.Dash(__name__, external_scripts=external_scripts, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__, external_scripts=external_scripts,
+                external_stylesheets=external_stylesheets)
 
 table_header = [
-    html.Thead(html.Tr([html.Th("Dato"), html.Th("Valor"), html.Th("Confirmar valor")]))
+    html.Thead(html.Tr([html.Th("Dato"), html.Th(
+        "Valor"), html.Th("Confirmar valor")]))
 ]
 
 row1 = html.Tr([html.Td("Ancho"),
@@ -75,14 +82,15 @@ table_body = [html.Tbody([row1, row2, row3, row4, row5, row6])]
 
 table = dbc.Table(table_header + table_body, bordered=True)
 
-image = Image.open('E:\Miguel Orjuela\PROYECTOS\CES App\Samsung.jpg')
+image = Image.open('Samsung.png')
 image_bw = image.convert(mode="L")  # Transform to black and white
-
 
 # print(image_bw.size) # [0]: width in pixels [1]: height in pixels
 
 # TODO Ask for the values on the interface (@callback)
 # --- Cambiar contraste en guia de medicion
+
+
 def change_contrast(img, level):
     factor = (259 * (level + 255)) / (255 * (259 - level))
 
@@ -140,7 +148,8 @@ def calculate_everything(a, b, c, d):
             dist_p.append(np.abs(i - pix_med_x))
             prof.append(wedge[pix_med_x][i])
 
-        data_wedge_dist = pd.DataFrame({"d_pix": prof, "x_pix": dist_p, "x_mm": dist})
+        data_wedge_dist = pd.DataFrame(
+            {"d_pix": prof, "x_pix": dist_p, "x_mm": dist})
 
         x = np.arange(0.0, 10, 0.01)
 
@@ -148,7 +157,8 @@ def calculate_everything(a, b, c, d):
         y_pix = list(map(lambda w: round(w * mm), y))
         x_pix = list(map(lambda w: round(w * mm), x))
 
-        data_wedge_depth = pd.DataFrame({"x_mill": x, "y_mill": y, "y_pix": y_pix, "x_pix": x_pix})
+        data_wedge_depth = pd.DataFrame(
+            {"x_mill": x, "y_mill": y, "y_pix": y_pix, "x_pix": x_pix})
 
         wedge_dd = data_wedge_depth.merge(data_wedge_dist)
         wedge_xd = wedge_dd.groupby("x_pix").median().reset_index()
@@ -162,18 +172,18 @@ def calculate_everything(a, b, c, d):
         # bite = np.array(image.crop(bite_params))
         cut_params = [[150, 1100], [220, 820], [450, 800], [400, 1200]]
         pts = np.array(cut_params)
-        ## (1) Crop the bounding rect
+        # (1) Crop the bounding rect
         rect = cv2.boundingRect(pts)
         x, y, w, h = rect
         croped = bite[y:y + h, x:x + w].copy()
 
-        ## (2) make mask
+        # (2) make mask
         pts = pts - pts.min(axis=0)
 
         mask = np.zeros(croped.shape[:2], np.uint8)
         cv2.drawContours(mask, [pts], -1, (255, 255, 255), -1, cv2.LINE_AA)
 
-        ## (3) do bit-op
+        # (3) do bit-op
         dst = cv2.bitwise_and(croped, croped, mask=mask)
 
         class Switch(dict):
@@ -263,7 +273,8 @@ app.layout = html.Div([
 
             html.H3('Paso #2'),
             html.H2('Especificación de áreas'),
-            html.P('A continuación delimita el área correspondiente a la mordida, la cuña de medicion y la guia.'),
+            html.P(
+                'A continuación delimita el área correspondiente a la mordida, la cuña de medicion y la guia.'),
             html.Div([
                 dbc.Row([
                     dbc.Col([
@@ -356,8 +367,10 @@ app.layout = html.Div([
         dcc.Tab(label='Paso #3', children=[
             html.Div([
                 html.H3('Paso #3'),
-                html.H2('Cálculos y configuración de áreas para análisis de profundidad.'),
-                html.P('A continuación se imprimen gráficos de prueba para verificar el proceso.'),
+                html.H2(
+                    'Cálculos y configuración de áreas para análisis de profundidad.'),
+                html.P(
+                    'A continuación se imprimen gráficos de prueba para verificar el proceso.'),
                 html.H4("Selección mordida"),
                 html.P("Resultados de selección en MORDIDA", id='table-mordida'),
                 html.H4("Selección cuña"),
@@ -375,23 +388,93 @@ app.layout = html.Div([
         dcc.Tab(label='Paso #4', children=[
             html.Div([
                 html.H1("This is the content in tab 3"),
+                # Session ID
+                # html.Div(session_id, id="session-id"),
+                html.Div(
+                    [
+                        # dbc.Alert(
+                        #     [
+                        #         "This is a primary alert with an ",
+                        #         html.A("example link", href="#",
+                        #                className="alert-link"),
+                        #     ],
+                        #     color="primary",
+                        # ),
+                        # dbc.Alert(
+                        #     [
+                        #         "This is a danger alert with an ",
+                        #         html.A("example link", href="#",
+                        #                className="alert-link", id="alerta"),
+                        #     ],
+                        #     color="danger",
+                        # ),
+                    ]
+                ),
+                # Main body
+                html.Div(
+                    id="app-container",
+                    children=[
+                        # Banner display
+                        html.Div(
+                            id="banner",
+                            children=[
+                                html.Img(
+                                    # id="logo", src=app.get_asset_url("dash-logo-new.png")
+                                ),
+                                # html.H2("Image Processing App", id="title"),
+                            ],
+                        ),
+                        html.Div(
+                            id="image",
+                            children=[
+                                # The Interactive Image Div contains the dcc Graph
+                                # showing the image, as well as the hidden div storing
+                                # the true image
+                                html.Div(
+                                    id="div-interactive-image",
+                                    children=[
+                                        utils.GRAPH_PLACEHOLDER,
+                                        html.Div(
+                                            id="div-storage",
+                                            children=utils.STORAGE_PLACEHOLDER,
+                                        ),
+                                    ],
+                                )
+                            ],
+                        ),
+                    ],
+                ),
+                # Sidebar
+                html.Div(
+                    id="sidebar",
+                    children=[
+                        drc.NamedInlineRadioItems(
+                            name="Selection Mode",
+                            short="selection-mode",
+                            options=[
+                                {"label": " Lasso", "value": "lasso"},
+                            ],
+                            val="lasso",
+                        ),
+                    ],
+                ),
             ])
         ]),
     ],
-             style={
-                 'fontFamily': 'system-ui'
-             },
-             content_style={
-                 'borderLeft': '1px solid #d6d6d6',
-                 'borderRight': '1px solid #d6d6d6',
-                 'borderBottom': '1px solid #d6d6d6',
-                 'padding': '44px'
-             },
-             parent_style={
-                 'maxWidth': '1000px',
-                 'margin': '0 auto'
-             }
-             )
+        style={
+        'fontFamily': 'system-ui'
+    },
+        content_style={
+        'borderLeft': '1px solid #d6d6d6',
+        'borderRight': '1px solid #d6d6d6',
+        'borderBottom': '1px solid #d6d6d6',
+        'padding': '44px'
+    },
+        parent_style={
+        'maxWidth': '1000px',
+        'margin': '0 auto'
+    }
+    )
 ])
 
 
@@ -587,6 +670,17 @@ def myfun(x):
     if x:
         return "renderizarMedicion();"
     return ""
+
+
+@app.callback(
+    Output("interactive-image", "figure"),
+    [Input("radio-selection-mode", "value")],
+    [State("interactive-image", "figure")],
+)
+def update_selection_mode(selection_mode, figure):
+    if figure:
+        figure["layout"]["dragmode"] = selection_mode
+    return figure
 
 
 if __name__ == '__main__':
