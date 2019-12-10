@@ -82,7 +82,7 @@ table_body = [html.Tbody([row1, row2, row3, row4, row5, row6])]
 
 table = dbc.Table(table_header + table_body, bordered=True)
 
-image = Image.open('Samsung.png')
+image = Image.open('E:\Miguel Orjuela\PROYECTOS\CES App\Samsung.jpg')
 image_bw = image.convert(mode="L")  # Transform to black and white
 
 # print(image_bw.size) # [0]: width in pixels [1]: height in pixels
@@ -535,10 +535,26 @@ def update_table_mordida(n_clicks, a, b, c, d):
         html.Thead(html.Tr([html.Th("Coordenada"), html.Th("Valor")]))
     ]
 
-    arow1 = html.Tr([html.Td("Inicio X"), html.Td(a)])
-    arow2 = html.Tr([html.Td("Inicio Y"), html.Td(b)])
-    arow3 = html.Tr([html.Td("Fin X"), html.Td(c)])
-    arow4 = html.Tr([html.Td("Fin Y"), html.Td(d)])
+    arow1 = html.Tr([
+        html.Td("Inicio X"),
+        html.Td(a)
+
+    ])
+    arow2 = html.Tr([
+        html.Td("Inicio Y"),
+        html.Td(b)
+
+    ])
+    arow3 = html.Tr([
+        html.Td("Fin X"),
+        html.Td(c)
+
+    ])
+    arow4 = html.Tr([
+        html.Td("Fin Y"),
+        html.Td(d)
+
+    ])
 
     atable_body = [html.Tbody([arow1, arow2, arow3, arow4])]
 
