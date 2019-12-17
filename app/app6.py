@@ -242,9 +242,9 @@ app.layout = html.Div([
     dcc.Tabs(id="tabs", children=[
         dcc.Tab(label='Paso #1', children=[
             html.H3('Paso #1'),
-            html.H2('Carga de imágen'),
-            html.P('Por favor selecciona o arrastra la imágen a analizar. Recuerda que la imágen debe contener el '
-                   'registro de mordida, el circulo y la regleta de calibración.'),
+            html.H2('Carga de imagen'),
+            html.P(['Por favor selecciona o arrastra la imagen a analizar. Recuerda que la imagen debe contener el '
+                   'registro de mordida, el circulo y la regleta de calibración.']),
             dcc.Upload(
                 id='upload-image',
                 children=html.Div([
@@ -283,7 +283,7 @@ app.layout = html.Div([
                                 dbc.CardHeader([
                                     dbc.Row([
                                         dbc.Col(
-                                            html.H4("Imágen cargada"),
+                                            html.H4("Imagen cargada"),
                                             width=8,
                                         ),
                                         dbc.Col([
@@ -371,7 +371,11 @@ app.layout = html.Div([
                     'Cálculos y configuración de áreas para análisis de profundidad.'),
                 html.P(
                     'A continuación se imprimen gráficos de prueba para verificar el proceso.'),
-                html.H4("Selección mordida"),
+                html.H4([
+                    "Selección mordida ",
+                    dbc.Button('Guardar mordida', id='guardar-mordida-btn'),
+                    html.Span("", id='guardar-mordida-result')
+                ]),
                 html.P("Resultados de selección en MORDIDA", id='table-mordida'),
                 html.H4("Selección cuña"),
                 html.P("Resultados de selección en MORDIDA", id='table-cuna'),
@@ -477,10 +481,12 @@ app.layout = html.Div([
     )
 ])
 
+app.config.suppress_callback_exceptions = True
+
 
 def parse_contents(contents, filename, date):
     return html.Div([
-        html.H4('Imágen a analizar'),
+        html.H4('Imagen a analizar'),
         dbc.Row([
             # dbc.Col([
             #     html.H5(datetime.datetime.fromtimestamp(date)),
@@ -523,6 +529,28 @@ def parse_contents_to_cropper(contents, filename, date):
     ])
 
 
+@app.callback(Output('guardar-mordida-result', 'children'),
+              [Input('guardar-mordida-btn', 'n_clicks')],
+              [State('input-inicio-x-mordida', 'value'),
+               State('input-inicio-y-mordida', 'value'),
+               State('input-fin-x-mordida', 'value'),
+               State('input-fin-y-mordida', 'value')])
+def save_bite_img(n_clicks, inicio_x, inicio_y, fin_x, fin_y):
+    if all(w != '' for w in [inicio_x, inicio_y, fin_x, fin_y]):
+        im = Image.open("/Samsung.png")
+        print(im)
+        width, height = im.size
+        print('width' + width)
+        print('height' + height)
+        # print("IMG CARGADA")
+        # borders = (inicio_x, inicio_y, width-fin_x, height-fin_y)
+        # print(borders)
+        # cropped = ImageOps.crop(im, borders)
+        # cropped.save("E:/Miguel Orjuela/PROYECTOS/CES App/Samsung-cropped.png")
+        return html.Span(inicio_x + inicio_y + fin_x + fin_y)
+    return html.Span("Nodata")
+
+
 @app.callback(Output('table-mordida', 'children'),
               [Input('btn-mordida', 'n_clicks')],
               [State('iniciox-input', 'value'),
@@ -537,26 +565,38 @@ def update_table_mordida(n_clicks, a, b, c, d):
 
     arow1 = html.Tr([
         html.Td("Inicio X"),
-        html.Td(a)
-
+        # html.Td(a),
+        dcc.Input(id='input-inicio-x-mordida', value=a),
     ])
     arow2 = html.Tr([
         html.Td("Inicio Y"),
-        html.Td(b)
-
+        # html.Td(b)
+        dcc.Input(id='input-inicio-y-mordida', value=b),
     ])
     arow3 = html.Tr([
         html.Td("Fin X"),
-        html.Td(c)
-
+        # html.Td(c),
+        dcc.Input(id='input-fin-x-mordida', value=c),
     ])
     arow4 = html.Tr([
         html.Td("Fin Y"),
-        html.Td(d)
-
+        # html.Td(d)
+        dcc.Input(id='input-fin-y-mordida', value=d),
     ])
 
     atable_body = [html.Tbody([arow1, arow2, arow3, arow4])]
+
+    # im = Image.open("Samsung.png")
+    # width, height = im.size
+    # print('width' + width)
+    # print('height' + height)
+    # print("IMG CARGADA")
+    # borders = (inicio_x, inicio_y, width-fin_x, height-fin_y)
+    # print(borders)
+    # cropped = ImageOps.crop(im, borders)
+    # cropped.save("E:/Miguel Orjuela/PROYECTOS/CES App/S
+
+
 
     return dbc.Table(atable_header + atable_body, bordered=True)
 

@@ -6,6 +6,11 @@ import dash_core_components as dcc
 import plotly.graph_objs as go
 import dash_reusable_components as drc
 
+import numpy as np
+
+from numba import vectorize, float64, int64
+
+import cv2
 from PIL import Image, ImageFilter, ImageDraw, ImageEnhance
 
 # drc = importlib.import_module("apps.dash-iamge-processing.dash_reusable_components")
@@ -59,7 +64,7 @@ GRAPH_PLACEHOLDER = dcc.Graph(
                     "sizex": 1527,
                     "sizey": 1200,
                     "layer": "below",
-                    "source": "assets/Samsung.png",
+                    # "source": "assets/Samsung.png",
                 }
             ],
             "dragmode": "select",
@@ -100,11 +105,35 @@ def generate_lasso_mask(image, selectedData):
     y_coords = selectedData["lassoPoints"]["y"]
     y_coords_corrected = [height - coord for coord in y_coords]
 
-    coordinates_tuple = list(zip(selectedData["lassoPoints"]["x"], y_coords_corrected))
+    # coordinates_tuple = list(zip(selectedData["lassoPoints"]["x"], y_coords_corrected))
+    # mask = Image.new("L", image.size)
+    # draw = ImageDraw.Draw(mask)
+    # draw.polygon(coordinates_tuple, fill=255)
+
+    coordinates_tuple = list(
+        zip(selectedData["lassoPoints"]["x"], y_coords_corrected))
+    pts = np.array(coordinates_tuple)
+    # (1) Crop the bounding rect
+    print(coordinates_tuple)
+    @vectorize([int64(float64)])
+    def redondear(x):
+        return x
+
+    pts = redondear(pts)
+
+    rect = cv2.boundingRect(pts)
+    x, y, w, h = rect
+    bite = np.array(image)
+    croped = bite[y:y + h, x:x + w].copy()
+    # (2) make mask
+    pts = pts - pts.min(axis=0)
+    mask = np.zeros(croped.shape[:2], np.uint8)
+    cv2.drawContours(np.array(mask), [pts], -1, (255, 255, 255), -1, cv2.LINE_AA)
+    # (3) do bit-op
+    dst = cv2.bitwise_and(croped, croped, mask=mask)
     mask = Image.new("L", image.size)
     draw = ImageDraw.Draw(mask)
     draw.polygon(coordinates_tuple, fill=255)
-
     return mask
 
 
