@@ -234,11 +234,14 @@ def calculate_everything(a, b, c, d):
 import plotly.graph_objs as go
 
 def create_image_figure():
+
+    imagen = Image.open('bite.jpg')
+    im_w, im_h = imagen.size
     # Create figure
     fig = go.Figure()
     # Constants
-    img_width = 1600
-    img_height = 900
+    img_width = im_w
+    img_height = im_h
     scale_factor = 0.5
     # Add invisible scatter trace.
     # This trace is added to help the autoresize logic work.
@@ -273,7 +276,7 @@ def create_image_figure():
             opacity=1.0,
             layer="below",
             sizing="stretch",
-            source="https://raw.githubusercontent.com/michaelbabyn/plot_data/master/bridge.jpg")
+            source=imagen)
     )
     fig.update_layout(
         width=img_width * scale_factor,
