@@ -82,7 +82,7 @@ table_body = [html.Tbody([row1, row2, row3, row4, row5, row6])]
 
 table = dbc.Table(table_header + table_body, bordered=True)
 
-image = Image.open('Samsung.png')
+image = Image.open('app/Samsung.png')
 image_bw = image.convert(mode="L")  # Transform to black and white
 
 # print(image_bw.size) # [0]: width in pixels [1]: height in pixels
@@ -231,7 +231,58 @@ def calculate_everything(a, b, c, d):
         return resultDiv
     return html.Div("Algún campo es nulo")
 
+import plotly.graph_objs as go
 
+def create_image_figure():
+    # Create figure
+    fig = go.Figure()
+    # Constants
+    img_width = 1600
+    img_height = 900
+    scale_factor = 0.5
+    # Add invisible scatter trace.
+    # This trace is added to help the autoresize logic work.
+    fig.add_trace(
+        go.Scatter(
+            x=[0, img_width * scale_factor],
+            y=[0, img_height * scale_factor],
+            mode="markers",
+            marker_opacity=0
+        )
+    )
+    # Configure axes
+    fig.update_xaxes(
+        visible=False,
+        range=[0, img_width * scale_factor]
+    )
+    fig.update_yaxes(
+        visible=False,
+        range=[0, img_height * scale_factor],
+        # the scaleanchor attribute ensures that the aspect ratio stays constant
+        scaleanchor="x"
+    )
+    # Add image
+    fig.add_layout_image(
+        go.layout.Image(
+            x=0,
+            sizex=img_width * scale_factor,
+            y=img_height * scale_factor,
+            sizey=img_height * scale_factor,
+            xref="x",
+            yref="y",
+            opacity=1.0,
+            layer="below",
+            sizing="stretch",
+            source="https://raw.githubusercontent.com/michaelbabyn/plot_data/master/bridge.jpg")
+    )
+    fig.update_layout(
+        width=img_width * scale_factor,
+        height=img_height * scale_factor,
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
+    )
+    return fig
+
+figura_lista = create_image_figure()
 # TODO Por aquí vamos
 
 
@@ -391,7 +442,12 @@ app.layout = html.Div([
         ]),
         dcc.Tab(label='Paso #4', children=[
             html.Div([
-                html.H1("This is the content in tab 3"),
+                html.H1("Resultados de la imagen"),
+                dcc.Graph(
+                    figure=figura_lista,
+                    # style={'height': 300},
+                    id='my-graph'
+                )
             ])
         ]),
     ],
