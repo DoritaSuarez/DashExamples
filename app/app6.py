@@ -13,8 +13,8 @@ import numpy as np
 import cv2
 import pandas as pd
 
-drc = importlib.import_module("dash_reusable_components")
-utils = importlib.import_module("utils")
+# drc = importlib.import_module("dash_reusable_components")
+# utils = importlib.import_module("utils")
 
 
 # external JavaScript files
@@ -82,7 +82,7 @@ table_body = [html.Tbody([row1, row2, row3, row4, row5, row6])]
 
 table = dbc.Table(table_header + table_body, bordered=True)
 
-image = Image.open('E:\Miguel Orjuela\PROYECTOS\CES App\Samsung.jpg')
+image = Image.open('Samsung.png')
 image_bw = image.convert(mode="L")  # Transform to black and white
 
 # print(image_bw.size) # [0]: width in pixels [1]: height in pixels
@@ -392,76 +392,6 @@ app.layout = html.Div([
         dcc.Tab(label='Paso #4', children=[
             html.Div([
                 html.H1("This is the content in tab 3"),
-                # Session ID
-                # html.Div(session_id, id="session-id"),
-                html.Div(
-                    [
-                        # dbc.Alert(
-                        #     [
-                        #         "This is a primary alert with an ",
-                        #         html.A("example link", href="#",
-                        #                className="alert-link"),
-                        #     ],
-                        #     color="primary",
-                        # ),
-                        # dbc.Alert(
-                        #     [
-                        #         "This is a danger alert with an ",
-                        #         html.A("example link", href="#",
-                        #                className="alert-link", id="alerta"),
-                        #     ],
-                        #     color="danger",
-                        # ),
-                    ]
-                ),
-                # Main body
-                html.Div(
-                    id="app-container",
-                    children=[
-                        # Banner display
-                        html.Div(
-                            id="banner",
-                            children=[
-                                html.Img(
-                                    # id="logo", src=app.get_asset_url("dash-logo-new.png")
-                                ),
-                                # html.H2("Image Processing App", id="title"),
-                            ],
-                        ),
-                        html.Div(
-                            id="image",
-                            children=[
-                                # The Interactive Image Div contains the dcc Graph
-                                # showing the image, as well as the hidden div storing
-                                # the true image
-                                html.Div(
-                                    id="div-interactive-image",
-                                    children=[
-                                        utils.GRAPH_PLACEHOLDER,
-                                        html.Div(
-                                            id="div-storage",
-                                            children=utils.STORAGE_PLACEHOLDER,
-                                        ),
-                                    ],
-                                )
-                            ],
-                        ),
-                    ],
-                ),
-                # Sidebar
-                html.Div(
-                    id="sidebar",
-                    children=[
-                        drc.NamedInlineRadioItems(
-                            name="Selection Mode",
-                            short="selection-mode",
-                            options=[
-                                {"label": " Lasso", "value": "lasso"},
-                            ],
-                            val="lasso",
-                        ),
-                    ],
-                ),
             ])
         ]),
     ],
@@ -726,17 +656,6 @@ def myfun(x):
     if x:
         return "renderizarMedicion();"
     return ""
-
-
-@app.callback(
-    Output("interactive-image", "figure"),
-    [Input("radio-selection-mode", "value")],
-    [State("interactive-image", "figure")],
-)
-def update_selection_mode(selection_mode, figure):
-    if figure:
-        figure["layout"]["dragmode"] = selection_mode
-    return figure
 
 
 if __name__ == '__main__':
