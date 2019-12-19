@@ -233,9 +233,9 @@ def calculate_everything(a, b, c, d):
 
 import plotly.graph_objs as go
 
-def create_image_figure():
-
-    imagen = Image.open('bite.jpg')
+def create_image_figure(image_path):
+    # Image loading
+    imagen = Image.open(image_path)
     im_w, im_h = imagen.size
     # Create figure
     fig = go.Figure()
