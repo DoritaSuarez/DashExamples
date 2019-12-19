@@ -227,7 +227,7 @@ def create_figure_cropped_lasso(image_path, xs, ys):
     img_width = imo_w
     img_height = imo_h
     scale_factor_a = 750/imo_w
-    scale_factor = 250/imo_w
+    scale_factor = 200/imo_w
     # Create figure
     print(imo_w, imo_w)
     # create tuple of tuples
@@ -307,6 +307,8 @@ def create_figure_cropped_lasso(image_path, xs, ys):
 
 def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
     cut_params = list(zip(x, y))
+    print(cut_params)
+    # cut_params = [(150,1100),(220,820),(450.40,800),(400,1200.18)]
     image = Image.open(image_path)
     image_bw = image.convert(mode="L")  # Transform to black and white
     bite = np.array(image_bw.crop(bite_params))
@@ -327,7 +329,7 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
     mid = round(guide_cont.shape[0]/2)
     print(guide_cont[mid])
     print("mid")
-    print(mid)
+    # print(mid)
     print(guide_cont.shape)
     zeros = [i for i, e in enumerate(guide_cont[mid]) if e == 0]
     print('ceros')
@@ -422,10 +424,10 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
     dst = cv2.bitwise_and(croped, croped, mask=mask)
 
     print('dst')
-    print(dst)
+    # print(dst)
 
     ## (4) add the white background
-    bg = np.ones_like(croped, np.uint8) * 255
+    # bg = np.ones_like(croped, np.uint8) * 255
 
     # cv2.bitwise_not(bg,bg, mask=mask)
     # plt.imshow(dst)
@@ -443,19 +445,22 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
     #     range(0, w_pix): 0
     # })
 
-    def classif(x):
-        if x < w_pix:
+    def classif(x_ent):
+        if x_ent < w_pix:
             return 0
-        elif x < k_pix:
+        elif x_ent < k_pix:
             return 1
         else:
             return 2
 
-    @vectorize([float64(float64)])
-    def cambio(x):
-        return classif(x)
+    print("k_pix")
 
-    classification = cambio(dst)
+    salida = dst.copy()
+
+    for i in range(dst.shape[0]):
+        # print(dst[i])
+        salida[i] = list(map(lambda x: classif(x), dst[i]))
+    classification = salida
 
     low = 0
     contact = 0
@@ -624,9 +629,9 @@ app.layout = html.Div([
                             id='diente1-btn',
                             color="primary",
                             className="mr-1",
-                            block=True),
+                            block=False),
                         html.Pre(id='selected-data1'),
-                    ]),
+                    ], width=3, style={'padding': '0px'}),
                     dbc.Col([
                         dcc.Graph(
                             id='diente2-graph',
@@ -636,9 +641,9 @@ app.layout = html.Div([
                             id='diente2-btn',
                             color="primary",
                             className="mr-1",
-                            block=True),
+                            block=False),
                         html.Pre(id='selected-data2'),
-                    ]),
+                    ], width=3, style={'padding': '0px'}),
                     dbc.Col([
                         dcc.Graph(
                             id='diente3-graph',
@@ -648,9 +653,9 @@ app.layout = html.Div([
                             id='diente3-btn',
                             color="primary",
                             className="mr-1",
-                            block=True),
+                            block=False),
                         html.Pre(id='selected-data3'),
-                    ]),
+                    ], width=3, style={'padding': '0px'}),
                     dbc.Col([
                         dcc.Graph(
                             id='diente4-graph',
@@ -660,9 +665,9 @@ app.layout = html.Div([
                             id='diente4-btn',
                             color="primary",
                             className="mr-1",
-                            block=True),
+                            block=False),
                         html.Pre(id='selected-data4'),
-                    ]),
+                    ], width=3, style={'padding': '0px'}),
                 ]),
                 dbc.Row([
                     dbc.Col([
@@ -674,9 +679,9 @@ app.layout = html.Div([
                             id='diente5-btn',
                             color="primary",
                             className="mr-1",
-                            block=True),
+                            block=False),
                         html.Pre(id='selected-data5'),
-                    ]),
+                    ], width=3, style={'padding': '0px'}),
                     dbc.Col([
                         dcc.Graph(
                             id='diente6-graph',
@@ -686,9 +691,9 @@ app.layout = html.Div([
                             id='diente6-btn',
                             color="primary",
                             className="mr-1",
-                            block=True),
+                            block=False),
                         html.Pre(id='selected-data6'),
-                    ]),
+                    ], width=3, style={'padding': '0px'}),
                     dbc.Col([
                         dcc.Graph(
                             id='diente7-graph',
@@ -698,9 +703,9 @@ app.layout = html.Div([
                             id='diente7-btn',
                             color="primary",
                             className="mr-1",
-                            block=True),
+                            block=False),
                         html.Pre(id='selected-data7'),
-                    ]),
+                    ], width=3, style={'padding': '0px'}),
                     dbc.Col([
                         dcc.Graph(
                             id='diente8-graph',
@@ -710,14 +715,15 @@ app.layout = html.Div([
                             id='diente8-btn',
                             color="primary",
                             className="mr-1",
-                            block=True),
+                            block=False),
                         html.Pre(id='selected-data8'),
-                    ]),
+                    ], width=3, style={'padding': '0px'}),
                 ]),
             ])
         ],
         style={
-            'fontFamily': 'system-ui'
+            'fontFamily': 'system-ui',
+            'box-sizing': 'border-box'
         },
         content_style=
         {
@@ -824,8 +830,16 @@ def display_selected_data(n_clicks, selectedData):
     print('paso anterior al calculo de todo')
     salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
     print('ya está salida calculado')
+    print(salida)
+    torender = html.Div([
+        html.H6('Contacto'),
+        html.Div(round(salida[0], 4)),
+        html.H6('Contacto cercano'),
+        html.Div(round(salida[1], 4)),
+    ])
     # return json.dumps(selectedData, indent=2), figure
-    return salida, figure
+    return torender, figure
+
 
 @app.callback(
     [Output('selected-data2', 'children'),
@@ -840,7 +854,14 @@ def display_selected_data(n_clicks, selectedData):
     x = selectedData["lassoPoints"]["x"]
     y = selectedData["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    return json.dumps(selectedData, indent=2), figure
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    torender = html.Div([
+        html.H6('Contacto'),
+        html.Div(round(salida[0], 4)),
+        html.H6('Contacto cercano'),
+        html.Div(round(salida[1], 4)),
+    ])
+    return torender, figure
 
 
 @app.callback(
@@ -856,7 +877,14 @@ def display_selected_data(n_clicks, selectedData):
     x = selectedData["lassoPoints"]["x"]
     y = selectedData["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    return json.dumps(selectedData, indent=2), figure
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    torender = html.Div([
+        html.H6('Contacto'),
+        html.Div(round(salida[0], 4)),
+        html.H6('Contacto cercano'),
+        html.Div(round(salida[1], 4)),
+    ])
+    return torender, figure
 
 
 @app.callback(
@@ -872,8 +900,14 @@ def display_selected_data(n_clicks, selectedData):
     x = selectedData["lassoPoints"]["x"]
     y = selectedData["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    return json.dumps(selectedData, indent=2), figure
-
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    torender = html.Div([
+        html.H6('Contacto'),
+        html.Div(round(salida[0], 4)),
+        html.H6('Contacto cercano'),
+        html.Div(round(salida[1], 4)),
+    ])
+    return torender, figure
 
 @app.callback(
     [Output('selected-data5', 'children'),
@@ -888,7 +922,15 @@ def display_selected_data(n_clicks, selectedData):
     x = selectedData["lassoPoints"]["x"]
     y = selectedData["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    return json.dumps(selectedData, indent=2), figure
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    torender = html.Div([
+        html.H6('Contacto'),
+        html.Div(round(salida[0], 4)),
+        html.H6('Contacto cercano'),
+        html.Div(round(salida[1], 4)),
+    ])
+    return torender, figure
+
 
 @app.callback(
     [Output('selected-data6', 'children'),
@@ -903,7 +945,14 @@ def display_selected_data(n_clicks, selectedData):
     x = selectedData["lassoPoints"]["x"]
     y = selectedData["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    return json.dumps(selectedData, indent=2), figure
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    torender = html.Div([
+        html.H6('Contacto'),
+        html.Div(round(salida[0], 4)),
+        html.H6('Contacto cercano'),
+        html.Div(round(salida[1], 4)),
+    ])
+    return torender, figure
 
 
 @app.callback(
@@ -919,7 +968,14 @@ def display_selected_data(n_clicks, selectedData):
     x = selectedData["lassoPoints"]["x"]
     y = selectedData["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    return json.dumps(selectedData, indent=2), figure
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    torender = html.Div([
+        html.H6('Contacto'),
+        html.Div(round(salida[0], 4)),
+        html.H6('Contacto cercano'),
+        html.Div(round(salida[1], 4)),
+    ])
+    return torender, figure
 
 
 @app.callback(
@@ -935,7 +991,14 @@ def display_selected_data(n_clicks, selectedData):
     x = selectedData["lassoPoints"]["x"]
     y = selectedData["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    return json.dumps(selectedData, indent=2), figure
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    torender = html.Div([
+        html.H6('Contacto'),
+        html.Div(round(salida[0], 4)),
+        html.H6('Contacto cercano'),
+        html.Div(round(salida[1], 4)),
+    ])
+    return torender, figure
 
 
 if __name__ == '__main__':
