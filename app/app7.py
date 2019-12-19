@@ -242,7 +242,6 @@ app.layout = html.Div([
             ]),
             dcc.Tab(label='Paso #2', children=[
                 html.H3('Paso #2'),
-                html.H2('Selección de areas'),
                 html.H2('Especificación de áreas'),
                 html.P(
                     'A continuación delimita el área correspondiente a la mordida, la cuña de medicion y la guia.'),
@@ -297,7 +296,7 @@ app.layout = html.Div([
                                             dcc.Graph(
                                                 id='mordida-graph',
                                             ),
-                                            html.Div(id='coordinates-div'),
+                                            html.Div(id='coordinates-div-mordida'),
                                         ]
                                     ),
                                 ],
@@ -310,7 +309,9 @@ app.layout = html.Div([
                                         [
                                             dcc.Graph(
                                                 id='cuna-graph',
-                                            ),                                        ]
+                                            ),
+                                            html.Div(id='coordinates-div-cuna'),
+                                        ]
                                     ),
                                 ],
                                 style={"width": "100%"},
@@ -322,7 +323,9 @@ app.layout = html.Div([
                                         [
                                             dcc.Graph(
                                                 id='guia-graph',
-                                            ),]
+                                            ),
+                                            html.Div(id='coordinates-div-guia'),
+                                        ]
                                     ),
                                 ],
                                 style={"width": "100%"},
@@ -370,11 +373,11 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
     Output('selected-data', 'children'),
     [Input('my-graph', 'selectedData')])
 def display_selected_data(selectedData):
-    return json.dumps(selectedData, indent=2)
-
+    # return json.dumps(selectedData, indent=2)
+    return ""
 
 @app.callback(
-    [Output('coordinates-div', 'children'),
+    [Output('coordinates-div-mordida', 'children'),
      Output('mordida-graph', 'figure')],
     [Input('btn-mordida', 'n_clicks')],
     [State('my-graph', 'selectedData')])
@@ -389,7 +392,45 @@ def display_selected_data(n_clicks, selected_data):
     x = tuple(x)
     print(x)
     figure = create_figure_cropped_box(raw_image_path, x)
-    return html.P(data), figure
+    return html.P(), figure
+
+
+@app.callback(
+    [Output('coordinates-div-cuna', 'children'),
+     Output('cuna-graph', 'figure')],
+    [Input('btn-cuna', 'n_clicks')],
+    [State('my-graph', 'selectedData')])
+def display_selected_data(n_clicks, selected_data):
+    data = json.dumps(selected_data, indent=2)
+    print("raw_image_path")
+    print(raw_image_path)
+    print('type data')
+    x = selected_data["range"]['x']
+    y = selected_data["range"]['y']
+    x.extend(y)
+    x = tuple(x)
+    print(x)
+    figure = create_figure_cropped_box(raw_image_path, x)
+    return html.P(), figure
+
+
+@app.callback(
+    [Output('coordinates-div-guia', 'children'),
+     Output('guia-graph', 'figure')],
+    [Input('btn-guia', 'n_clicks')],
+    [State('my-graph', 'selectedData')])
+def display_selected_data(n_clicks, selected_data):
+    data = json.dumps(selected_data, indent=2)
+    print("raw_image_path")
+    print(raw_image_path)
+    print('type data')
+    x = selected_data["range"]['x']
+    y = selected_data["range"]['y']
+    x.extend(y)
+    x = tuple(x)
+    print(x)
+    figure = create_figure_cropped_box(raw_image_path, x)
+    return html.P(), figure
 
 
 if __name__ == '__main__':
