@@ -333,7 +333,6 @@ app.layout = html.Div([
                         ], width=4),
                     ]),
                 ]),
-                html.Pre(id='selected-data'),
             ]),
             dcc.Tab(label='Paso #3', children=[
                 html.H3('Paso #3'),
@@ -353,6 +352,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
+                        html.Pre(id='selected-data'),
                     ]),
                     dbc.Col([
                         dcc.Graph(
@@ -470,13 +470,6 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
 
 
 @app.callback(
-    Output('selected-data', 'children'),
-    [Input('my-graph', 'selectedData')])
-def display_selected_data(selectedData):
-    # return json.dumps(selectedData, indent=2)
-    return ""
-
-@app.callback(
     [Output('coordinates-div-mordida', 'children'),
      Output('mordida-graph', 'figure'),
      Output('especificacion-piezas', 'figure')],
@@ -533,6 +526,13 @@ def display_selected_data(n_clicks, selected_data):
     print(x)
     figure = create_figure_cropped_box(raw_image_path, x)
     return html.P(), figure
+
+
+@app.callback(
+    Output('selected-data', 'children'),
+    [Input('especificacion-piezas', 'selectedData')])
+def display_selected_data(selectedData):
+    return json.dumps(selectedData, indent=2)
 
 
 if __name__ == '__main__':
