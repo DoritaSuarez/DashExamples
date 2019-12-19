@@ -136,7 +136,7 @@ def create_image_figure(image_path):
     return fig
 
 
-def create_figure_cropped_box(image_path, coords):
+def create_figure_cropped_box(image_path, coords, factor=250):
     # Load the image
     print(coords)
     imagen = Image.open(image_path)
@@ -158,7 +158,7 @@ def create_figure_cropped_box(image_path, coords):
     # Constants
     img_width = im_w
     img_height = im_h
-    scale_factor = 250/im_w
+    scale_factor = factor/im_w
     # Add invisible scatter trace.
     # This trace is added to help the autoresize logic work.
     fig.add_trace(
@@ -335,6 +335,106 @@ app.layout = html.Div([
                 ]),
                 html.Pre(id='selected-data'),
             ]),
+            dcc.Tab(label='Paso #3', children=[
+                html.H3('Paso #3'),
+                html.H2('Especificación de piezas dentales'),
+                dcc.Graph(
+                    id='especificacion-piezas'
+                ),
+                dbc.Row([]),
+                dbc.Row([
+                    dbc.Col([
+                        dcc.Graph(
+                            id='diente1-graph',
+                        ),
+                        dbc.Button(
+                            "Diente 1",
+                            id='diente1-btn',
+                            color="primary",
+                            className="mr-1",
+                            block=True),
+                    ]),
+                    dbc.Col([
+                        dcc.Graph(
+                            id='diente2-graph',
+                        ),
+                        dbc.Button(
+                            "Diente 2",
+                            id='diente2-btn',
+                            color="primary",
+                            className="mr-1",
+                            block=True),
+                    ]),
+                    dbc.Col([
+                        dcc.Graph(
+                            id='diente3-graph',
+                        ),
+                        dbc.Button(
+                            "Diente 3",
+                            id='diente3-btn',
+                            color="primary",
+                            className="mr-1",
+                            block=True),
+                    ]),
+                    dbc.Col([
+                        dcc.Graph(
+                            id='diente4-graph',
+                        ),
+                        dbc.Button(
+                            "Diente 4",
+                            id='diente4-btn',
+                            color="primary",
+                            className="mr-1",
+                            block=True),
+                    ]),
+                ]),
+                dbc.Row([
+                    dbc.Col([
+                        dcc.Graph(
+                            id='diente5-graph',
+                        ),
+                        dbc.Button(
+                            "Diente 5",
+                            id='diente5-btn',
+                            color="primary",
+                            className="mr-1",
+                            block=True),
+                    ]),
+                    dbc.Col([
+                        dcc.Graph(
+                            id='diente6-graph',
+                        ),
+                        dbc.Button(
+                            "Diente 6",
+                            id='diente6-btn',
+                            color="primary",
+                            className="mr-1",
+                            block=True),
+                    ]),
+                    dbc.Col([
+                        dcc.Graph(
+                            id='diente7-graph',
+                        ),
+                        dbc.Button(
+                            "Diente 7",
+                            id='diente7-btn',
+                            color="primary",
+                            className="mr-1",
+                            block=True),
+                    ]),
+                    dbc.Col([
+                        dcc.Graph(
+                            id='diente8-graph',
+                        ),
+                        dbc.Button(
+                            "Diente 8",
+                            id='diente8-btn',
+                            color="primary",
+                            className="mr-1",
+                            block=True),
+                    ]),
+                ]),
+            ])
         ],
         style={
             'fontFamily': 'system-ui'
@@ -378,7 +478,8 @@ def display_selected_data(selectedData):
 
 @app.callback(
     [Output('coordinates-div-mordida', 'children'),
-     Output('mordida-graph', 'figure')],
+     Output('mordida-graph', 'figure'),
+     Output('especificacion-piezas', 'figure')],
     [Input('btn-mordida', 'n_clicks')],
     [State('my-graph', 'selectedData')])
 def display_selected_data(n_clicks, selected_data):
@@ -392,7 +493,8 @@ def display_selected_data(n_clicks, selected_data):
     x = tuple(x)
     print(x)
     figure = create_figure_cropped_box(raw_image_path, x)
-    return html.P(), figure
+    figure_zoomed = create_figure_cropped_box(raw_image_path, x, 750)
+    return html.P(), figure, figure_zoomed
 
 
 @app.callback(
