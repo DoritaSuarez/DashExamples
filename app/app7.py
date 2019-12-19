@@ -92,7 +92,7 @@ def create_image_figure(image_path):
     # Constants
     img_width = im_w
     img_height = im_h
-    scale_factor = 0.25
+    scale_factor = 550/im_w
     # Add invisible scatter trace.
     # This trace is added to help the autoresize logic work.
     fig.add_trace(
@@ -142,22 +142,23 @@ def create_figure_cropped_box(image_path, coords):
     imagen = Image.open(image_path)
     imo_w, imo_h = imagen.size
     print(imagen)
-    im_w, im_h = imagen.size
     # Create figure
-    print(imo_w, im_w)
+    print(imo_w, imo_w)
     coords2 = (500, 600, 2300, 2200)
-    coords3 = tuple(list(map(lambda x: 4*x, list(coords))))
+    coords3 = tuple(list(map(lambda x: (imo_w/550)*x, list(coords))))
     a, b, c, d = coords3
-    coords4 = (a, im_w-c, b, d)
+    coords4 = (a, imo_h-d, b, imo_h-c)
     print(coords2)
     print(coords3)
     print(coords4)
     imagen = imagen.crop(coords4)
     fig = go.Figure()
+    im_w, im_h = imagen.size
+    print(imagen.size) 
     # Constants
     img_width = im_w
     img_height = im_h
-    scale_factor = 0.25
+    scale_factor = 250/im_w
     # Add invisible scatter trace.
     # This trace is added to help the autoresize logic work.
     fig.add_trace(
