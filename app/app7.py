@@ -234,6 +234,9 @@ def create_figure_cropped_lasso(image_path, xs, ys):
     x = list(map(lambda x: round(x*1/scale_factor_a), xs))
     y = list(map(lambda x: round(img_height - x*1/scale_factor_a), ys))
     coordenadas_nuevas = list(zip(x, y))
+    print("Es el otro CutParams")
+    print(coordenadas_nuevas)
+
     # Cropping image
     @vectorize([int64(float64)])
     def redondear(x):
@@ -306,14 +309,25 @@ def create_figure_cropped_lasso(image_path, xs, ys):
 
 
 def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
-    cut_params = list(zip(x, y))
-    print(cut_params)
+    # print(cut_params)
     # cut_params = [(150,1100),(220,820),(450.40,800),(400,1200.18)]
     image = Image.open(image_path)
     image_bw = image.convert(mode="L")  # Transform to black and white
+
+    imagen_bit = image_bw.crop(bite_params)
+
     bite = np.array(image_bw.crop(bite_params))
     guide = np.array(image_bw.crop(guide_params))
     wedge = np.array(image_bw.crop(wedge_params))
+
+    imo_w, imo_h = imagen_bit.size
+    img_width = imo_w
+    img_height = imo_h
+    scale_factor_a = 750/imo_w
+    x = list(map(lambda x: round(x*1/scale_factor_a), x))
+    y = list(map(lambda x: round(img_height - x*1/scale_factor_a), y))
+    cut_params = list(zip(x, y))
+    print(cut_params)
 
     def change_contrast(img, level):
         factor = (259 * (level + 255)) / (255 * (259 - level))
