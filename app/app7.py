@@ -14,6 +14,8 @@ import pandas as pd
 import plotly.graph_objs as go
 import json
 from copy import deepcopy
+from numba import vectorize, float64, int64
+
 
 
 # external JavaScript files
@@ -213,6 +215,100 @@ def create_figure_cropped_box(image_path, coords, cut_type, factor=250):
     )
     return fig
 
+
+def create_figure_cropped_lasso(image_path, xs, ys):
+    # Load the image
+    imagen = Image.open(image_path)
+    print('imagen recien cargada')
+    print(imagen)
+    imagen = imagen.crop(global_cropped_bite)
+    print('imagen post crop')
+    print(imagen)
+    imo_w, imo_h = imagen.size
+    img_width = imo_w
+    img_height = imo_h
+    scale_factor_a = 750/imo_w
+    scale_factor = 250/imo_w
+    # Create figure
+    print(imo_w, imo_w)
+    # create tuple of tuples
+    x = list(map(lambda x: round(x*1/scale_factor_a), xs))
+    y = list(map(lambda x: round(img_height - x*1/scale_factor_a), ys))
+    coordenadas_nuevas = list(zip(x, y))
+    # Cropping image
+    @vectorize([int64(float64)])
+    def redondear(x):
+        return x
+    cut_params = coordenadas_nuevas# [(150,1100),(220,820),(450.40,800),(400,1200.18)]
+    cut_params = redondear(cut_params)
+    pts = np.array(cut_params)
+    print("Va pts")
+    print(pts)
+    ## (1) Crop the bounding rect
+    rect = cv2.boundingRect(pts)
+    x,y,w,h = rect
+    print('rect')
+    print(rect)
+    print('imagen')
+    print(imagen)
+    imagen = np.array(imagen)
+    croped = imagen[y:y+h, x:x+w].copy()
+    ## (2) make mask
+    print('croped')
+    print(croped)
+    pts = pts - pts.min(axis=0)
+    mask = np.zeros(croped.shape[:2], np.uint8)
+    cv2.drawContours(mask, [pts], -1, (255, 255, 255), -1, cv2.LINE_AA)
+    ## (3) do bit-op
+    imagen = cv2.bitwise_and(croped, croped, mask=mask)
+    imagen = Image.fromarray(imagen)
+    ## (4) add the white background
+    bg = np.ones_like(croped, np.uint8)*255
+    fig = go.Figure()
+    im_w, im_h = imagen.size
+    print(imagen.size)
+    # Constants
+    # Add invisible scatter trace.
+    # This trace is added to help the autoresize logic work.
+    fig.add_trace(
+        go.Scatter(
+            x=[0, img_width * scale_factor],
+            y=[0, img_height * scale_factor],
+            mode="markers",
+            marker_opacity=0
+        )
+    )
+    # Configure axes
+    fig.update_xaxes(
+        visible=False,
+        range=[0, img_width * scale_factor]
+    )
+    fig.update_yaxes(
+        visible=False,
+        range=[0, img_height * scale_factor],
+        # the scaleanchor attribute ensures that the aspect ratio stays constant
+        scaleanchor="x"
+    )
+    # Add image
+    fig.add_layout_image(
+        go.layout.Image(
+            x=0,
+            sizex=img_width * scale_factor,
+            y=img_height * scale_factor,
+            sizey=img_height * scale_factor,
+            xref="x",
+            yref="y",
+            opacity=1.0,
+            layer="below",
+            sizing="stretch",
+            source=imagen)
+    )
+    fig.update_layout(
+        width=img_width * scale_factor,
+        height=img_height * scale_factor,
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
+    )
+    return fig
 
 app.layout = html.Div([
     html.H1(
@@ -541,13 +637,18 @@ def display_selected_data(n_clicks, selected_data):
 
 
 @app.callback(
-    Output('selected-data', 'children'),
+    [Output('selected-data', 'children'),
+     Output('diente1-graph', 'figure')],
     [Input('especificacion-piezas', 'selectedData')])
 def display_selected_data(selectedData):
     print(global_cropped_bite)
     print(global_cropped_wedge)
     print(global_cropped_guide)
-    return json.dumps(selectedData, indent=2)
+    print(raw_image_path)
+    x = selectedData["lassoPoints"]["x"]
+    y = selectedData["lassoPoints"]["y"]
+    figure = create_figure_cropped_lasso(raw_image_path, x, y)
+    return json.dumps(selectedData, indent=2), figure
 
 
 if __name__ == '__main__':
