@@ -81,8 +81,71 @@ def parse_contents(contents, filename, date):
 
 def create_image_figure(image_path):
     # Load the image
+    global raw_image_path
     raw_image_path = image_path
     imagen = Image.open(image_path)
+    im_w, im_h = imagen.size
+    # Create figure
+    fig = go.Figure()
+    # Constants
+    img_width = im_w
+    img_height = im_h
+    scale_factor = 0.25
+    # Add invisible scatter trace.
+    # This trace is added to help the autoresize logic work.
+    fig.add_trace(
+        go.Scatter(
+            x=[0, img_width * scale_factor],
+            y=[0, img_height * scale_factor],
+            mode="markers",
+            marker_opacity=0
+        )
+    )
+    # Configure axes
+    fig.update_xaxes(
+        visible=False,
+        range=[0, img_width * scale_factor]
+    )
+    fig.update_yaxes(
+        visible=False,
+        range=[0, img_height * scale_factor],
+        # the scaleanchor attribute ensures that the aspect ratio stays constant
+        scaleanchor="x"
+    )
+    # Add image
+    fig.add_layout_image(
+        go.layout.Image(
+            x=0,
+            sizex=img_width * scale_factor,
+            y=img_height * scale_factor,
+            sizey=img_height * scale_factor,
+            xref="x",
+            yref="y",
+            opacity=1.0,
+            layer="below",
+            sizing="stretch",
+            source=imagen)
+    )
+    fig.update_layout(
+        width=img_width * scale_factor,
+        height=img_height * scale_factor,
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
+    )
+    return fig
+
+
+def create_figure_cropped_box(image_path, coords):
+    # Load the image
+    imagen = Image.open(image_path)
+    width, height = imagen.size
+
+    # Setting the points for cropped image
+    left = 5
+    top = height / 2
+    right = 164
+    bottom = 3 * height / 4
+
+    imagen = imagen.crop((left, top, right, bottom))
     im_w, im_h = imagen.size
     # Create figure
     fig = go.Figure()
@@ -305,12 +368,21 @@ def display_selected_data(selectedData):
 
 
 @app.callback(
-    Output('coordinates-div', 'children'),
+    [Output('coordinates-div', 'children'),
+     Output('mordida-graph', 'figure')],
     [Input('btn-mordida', 'n_clicks')],
     [State('my-graph', 'selectedData')])
 def display_selected_data(n_clicks, selected_data):
     data = json.dumps(selected_data, indent=2)
-    return html.P(data)
+    print("raw_image_path")
+    print(raw_image_path)
+    print('type data')
+    x = selected_data["range"]['x']
+    y = selected_data["range"]['x']
+    x.extend(y)
+    print(x)
+    figure = create_figure_cropped_box(raw_image_path, x)
+    return html.P(data), figure
 
 
 if __name__ == '__main__':
