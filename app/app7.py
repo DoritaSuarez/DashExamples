@@ -15,6 +15,7 @@ import plotly.graph_objs as go
 import json
 from copy import deepcopy
 from numba import vectorize, float64, int64
+import functools
 
 
 
@@ -219,11 +220,9 @@ def create_figure_cropped_box(image_path, coords, cut_type, factor=250):
 def create_figure_cropped_lasso(image_path, xs, ys):
     # Load the image
     imagen = Image.open(image_path)
-    print('imagen recien cargada')
-    print(imagen)
+
     imagen = imagen.crop(global_cropped_bite)
-    print('imagen post crop')
-    print(imagen)
+
     imo_w, imo_h = imagen.size
     img_width = imo_w
     img_height = imo_h
@@ -242,20 +241,15 @@ def create_figure_cropped_lasso(image_path, xs, ys):
     cut_params = coordenadas_nuevas# [(150,1100),(220,820),(450.40,800),(400,1200.18)]
     cut_params = redondear(cut_params)
     pts = np.array(cut_params)
-    print("Va pts")
-    print(pts)
+
     ## (1) Crop the bounding rect
     rect = cv2.boundingRect(pts)
     x,y,w,h = rect
-    print('rect')
-    print(rect)
-    print('imagen')
-    print(imagen)
+
     imagen = np.array(imagen)
     croped = imagen[y:y+h, x:x+w].copy()
     ## (2) make mask
-    print('croped')
-    print(croped)
+
     pts = pts - pts.min(axis=0)
     mask = np.zeros(croped.shape[:2], np.uint8)
     cv2.drawContours(mask, [pts], -1, (255, 255, 255), -1, cv2.LINE_AA)
@@ -266,7 +260,7 @@ def create_figure_cropped_lasso(image_path, xs, ys):
     bg = np.ones_like(croped, np.uint8)*255
     fig = go.Figure()
     im_w, im_h = imagen.size
-    print(imagen.size)
+
     # Constants
     # Add invisible scatter trace.
     # This trace is added to help the autoresize logic work.
@@ -309,6 +303,177 @@ def create_figure_cropped_lasso(image_path, xs, ys):
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
     return fig
+
+
+def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
+    cut_params = list(zip(x, y))
+    image = Image.open(image_path)
+    image_bw = image.convert(mode="L")  # Transform to black and white
+    bite = np.array(image_bw.crop(bite_params))
+    guide = np.array(image_bw.crop(guide_params))
+    wedge = np.array(image_bw.crop(wedge_params))
+
+    def change_contrast(img, level):
+        factor = (259 * (level + 255)) / (255 * (259 - level))
+        def contrast(c):
+            return 128 + factor * (c - 128)
+        return img.point(contrast)
+
+    guide_cont = change_contrast(image, 100)
+    guide_cont = np.array(guide_cont.crop(guide_params))
+    guide_cont = cv2.cvtColor(guide_cont, cv2.COLOR_BGR2GRAY)
+
+
+    mid = round(guide_cont.shape[0]/2)
+    print(guide_cont[mid])
+    print("mid")
+    print(mid)
+    print(guide_cont.shape)
+    zeros = [i for i, e in enumerate(guide_cont[mid]) if e == 0]
+    print('ceros')
+    print(np.diff(zeros))
+
+    sum_t = 0
+    count = 0
+    pix = []
+    for i in range(len(zeros) - 1):
+        if ((zeros[i + 1] - zeros[i]) == 1):
+            sum_t = sum_t + zeros[i]
+            count = count + 1
+        else:
+            pix.append(round(sum_t / count))
+            sum_t = 0
+            count = 0
+    print("pix")
+    print(pix)
+    mm = round(np.mean(np.diff(pix)))
+
+
+    wedge_w = []
+    for i in range(wedge.shape[0]):
+        x = list(wedge[i])
+        wedge_w.append(max(x))
+    pix_med_y = wedge_w.index(max(wedge_w))
+    #     plt.imshow(wedge)
+
+    pix_med_x = np.argmax(wedge[pix_med_y])
+
+    dist = []
+    prof = []
+    dist_p = []
+    for i in range(wedge.shape[1]):
+        dist.append(np.abs(i - pix_med_x) / mm)
+        dist_p.append(np.abs(i - pix_med_x))
+        prof.append(wedge[pix_med_x][i])
+    #     plt.plot(dist_p, prof)
+    data_wedge_dist = pd.DataFrame({"d_pix": prof, "x_pix": dist_p, "x_mm": dist})
+
+    x = np.arange(-19, 19, 0.01)
+
+    def tomm(w):
+        return -np.sqrt(361 - w * w) + 19
+
+    #     return -1/2*np.sqrt(22201-4*w*w)
+    y = list(map(tomm, x))
+    y_pix = list(map(lambda w: round(w * mm), y))
+    x_pix = list(map(lambda w: round(w * mm), x))
+    data_wedge_depth = pd.DataFrame({"x_mill": x, "y_mill": y, "y_pix": y_pix, "x_pix": x_pix})
+    wedge_dd = data_wedge_depth.merge(data_wedge_dist)
+    wedge_xd = wedge_dd.groupby("x_pix").median().reset_index()
+    wedge_dd = wedge_dd.groupby("d_pix").median().reset_index()
+
+    k_pix = min(np.array(wedge_dd[wedge_dd.y_mill <= 0.05]["d_pix"]))
+    w_pix = min(np.array(wedge_dd[wedge_dd.y_mill <= 0.35]["d_pix"]))
+
+    def depth_found(dist, a):
+        y = [i for i, e in enumerate(prof) if e == a]
+        if (len(y) == 0):
+            return "not found"
+        else:
+            return np.median([dist[i] for i in y])
+
+    distances = []
+    depths = []
+    for i in range(255):
+        distances.append(depth_found(dist, i))
+        depths.append(i)
+    for i in range(len(distances)):
+        if (i == 0 and distances[i] == "not found"):
+            aux = [x for x in distances if x != "not found"]
+            distances[i] = max(aux)
+        if (distances[i] == "not found"):
+            distances[i] = distances[i - 1]
+
+    @vectorize([int64(float64)])
+    def redondear(x):
+        return x
+
+    cut_params = redondear(cut_params)
+    pts = np.array(cut_params)
+    ## (1) Crop the bounding rect
+    rect = cv2.boundingRect(pts)
+    x, y, w, h = rect
+    croped = bite[y:y + h, x:x + w].copy()
+    ## (2) make mask
+    pts = pts - pts.min(axis=0)
+    mask = np.zeros(croped.shape[:2], np.uint8)
+    cv2.drawContours(mask, [pts], -1, (255, 255, 255), -1, cv2.LINE_AA)
+    ## (3) do bit-op
+    dst = cv2.bitwise_and(croped, croped, mask=mask)
+
+    print('dst')
+    print(dst)
+
+    ## (4) add the white background
+    bg = np.ones_like(croped, np.uint8) * 255
+
+    # cv2.bitwise_not(bg,bg, mask=mask)
+    # plt.imshow(dst)
+
+    # class Switch(dict):
+    #     def __getitem__(self, item):
+    #         for key in self.keys():  # iterate over the intervals
+    #             if item in key:  # if the argument is part of that interval
+    #                 return super().__getitem__(key)  # return its associated value
+    #         raise KeyError(item)  # if not in any interval, raise KeyError
+    #
+    # switch = Switch({
+    #     range(k_pix, 255): 2,
+    #     range(w_pix, k_pix): 1,
+    #     range(0, w_pix): 0
+    # })
+
+    def classif(x):
+        if x < w_pix:
+            return 0
+        elif x < k_pix:
+            return 1
+        else:
+            return 2
+
+    @vectorize([float64(float64)])
+    def cambio(x):
+        return classif(x)
+
+    classification = cambio(dst)
+
+    low = 0
+    contact = 0
+    close = 0
+    for i in range(classification.shape[0]):
+        for j in range(classification.shape[1]):
+            if (classification[i][j] == 0):
+                low = low + 1
+            if (classification[i][j] == 1):
+                close = close + 1
+            if (classification[i][j] == 2):
+                contact = contact + 1
+
+    area_contact = (1 / mm ** 2) * contact
+    area_close = (1 / mm ** 2) * close
+
+    return area_contact, area_close
+
 
 app.layout = html.Div([
     html.H1(
@@ -460,7 +625,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
-                        html.Pre(id='selected-data'),
+                        html.Pre(id='selected-data1'),
                     ]),
                     dbc.Col([
                         dcc.Graph(
@@ -472,6 +637,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
+                        html.Pre(id='selected-data2'),
                     ]),
                     dbc.Col([
                         dcc.Graph(
@@ -483,6 +649,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
+                        html.Pre(id='selected-data3'),
                     ]),
                     dbc.Col([
                         dcc.Graph(
@@ -494,6 +661,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
+                        html.Pre(id='selected-data4'),
                     ]),
                 ]),
                 dbc.Row([
@@ -507,6 +675,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
+                        html.Pre(id='selected-data5'),
                     ]),
                     dbc.Col([
                         dcc.Graph(
@@ -518,6 +687,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
+                        html.Pre(id='selected-data6'),
                     ]),
                     dbc.Col([
                         dcc.Graph(
@@ -529,6 +699,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
+                        html.Pre(id='selected-data7'),
                     ]),
                     dbc.Col([
                         dcc.Graph(
@@ -540,6 +711,7 @@ app.layout = html.Div([
                             color="primary",
                             className="mr-1",
                             block=True),
+                        html.Pre(id='selected-data8'),
                     ]),
                 ]),
             ])
@@ -637,10 +809,125 @@ def display_selected_data(n_clicks, selected_data):
 
 
 @app.callback(
-    [Output('selected-data', 'children'),
+    [Output('selected-data1', 'children'),
      Output('diente1-graph', 'figure')],
-    [Input('especificacion-piezas', 'selectedData')])
-def display_selected_data(selectedData):
+    [Input('diente1-btn', 'n_clicks')],
+    [State('especificacion-piezas', 'selectedData')],)
+def display_selected_data(n_clicks, selectedData):
+    print(global_cropped_bite)
+    print(global_cropped_wedge)
+    print(global_cropped_guide)
+    print(raw_image_path)
+    x = selectedData["lassoPoints"]["x"]
+    y = selectedData["lassoPoints"]["y"]
+    figure = create_figure_cropped_lasso(raw_image_path, x, y)
+    print('paso anterior al calculo de todo')
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    print('ya está salida calculado')
+    # return json.dumps(selectedData, indent=2), figure
+    return salida, figure
+
+@app.callback(
+    [Output('selected-data2', 'children'),
+     Output('diente2-graph', 'figure')],
+    [Input('diente2-btn', 'n_clicks')],
+    [State('especificacion-piezas', 'selectedData')],)
+def display_selected_data(n_clicks, selectedData):
+    print(global_cropped_bite)
+    print(global_cropped_wedge)
+    print(global_cropped_guide)
+    print(raw_image_path)
+    x = selectedData["lassoPoints"]["x"]
+    y = selectedData["lassoPoints"]["y"]
+    figure = create_figure_cropped_lasso(raw_image_path, x, y)
+    return json.dumps(selectedData, indent=2), figure
+
+
+@app.callback(
+    [Output('selected-data3', 'children'),
+     Output('diente3-graph', 'figure')],
+    [Input('diente3-btn', 'n_clicks')],
+    [State('especificacion-piezas', 'selectedData')],)
+def display_selected_data(n_clicks, selectedData):
+    print(global_cropped_bite)
+    print(global_cropped_wedge)
+    print(global_cropped_guide)
+    print(raw_image_path)
+    x = selectedData["lassoPoints"]["x"]
+    y = selectedData["lassoPoints"]["y"]
+    figure = create_figure_cropped_lasso(raw_image_path, x, y)
+    return json.dumps(selectedData, indent=2), figure
+
+
+@app.callback(
+    [Output('selected-data4', 'children'),
+     Output('diente4-graph', 'figure')],
+    [Input('diente4-btn', 'n_clicks')],
+    [State('especificacion-piezas', 'selectedData')],)
+def display_selected_data(n_clicks, selectedData):
+    print(global_cropped_bite)
+    print(global_cropped_wedge)
+    print(global_cropped_guide)
+    print(raw_image_path)
+    x = selectedData["lassoPoints"]["x"]
+    y = selectedData["lassoPoints"]["y"]
+    figure = create_figure_cropped_lasso(raw_image_path, x, y)
+    return json.dumps(selectedData, indent=2), figure
+
+
+@app.callback(
+    [Output('selected-data5', 'children'),
+     Output('diente5-graph', 'figure')],
+    [Input('diente5-btn', 'n_clicks')],
+    [State('especificacion-piezas', 'selectedData')],)
+def display_selected_data(n_clicks, selectedData):
+    print(global_cropped_bite)
+    print(global_cropped_wedge)
+    print(global_cropped_guide)
+    print(raw_image_path)
+    x = selectedData["lassoPoints"]["x"]
+    y = selectedData["lassoPoints"]["y"]
+    figure = create_figure_cropped_lasso(raw_image_path, x, y)
+    return json.dumps(selectedData, indent=2), figure
+
+@app.callback(
+    [Output('selected-data6', 'children'),
+     Output('diente6-graph', 'figure')],
+    [Input('diente6-btn', 'n_clicks')],
+    [State('especificacion-piezas', 'selectedData')],)
+def display_selected_data(n_clicks, selectedData):
+    print(global_cropped_bite)
+    print(global_cropped_wedge)
+    print(global_cropped_guide)
+    print(raw_image_path)
+    x = selectedData["lassoPoints"]["x"]
+    y = selectedData["lassoPoints"]["y"]
+    figure = create_figure_cropped_lasso(raw_image_path, x, y)
+    return json.dumps(selectedData, indent=2), figure
+
+
+@app.callback(
+    [Output('selected-data7', 'children'),
+     Output('diente7-graph', 'figure')],
+    [Input('diente7-btn', 'n_clicks')],
+    [State('especificacion-piezas', 'selectedData')],)
+def display_selected_data(n_clicks, selectedData):
+    print(global_cropped_bite)
+    print(global_cropped_wedge)
+    print(global_cropped_guide)
+    print(raw_image_path)
+    x = selectedData["lassoPoints"]["x"]
+    y = selectedData["lassoPoints"]["y"]
+    figure = create_figure_cropped_lasso(raw_image_path, x, y)
+    return json.dumps(selectedData, indent=2), figure
+
+
+@app.callback(
+    [Output('selected-data8', 'children'),
+     Output('diente8-graph', 'figure')],
+    [Input('diente8-btn', 'n_clicks')],
+    [State('especificacion-piezas', 'selectedData')],)
+def display_selected_data(n_clicks, selectedData):
     print(global_cropped_bite)
     print(global_cropped_wedge)
     print(global_cropped_guide)
