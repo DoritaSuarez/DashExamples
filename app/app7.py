@@ -13,6 +13,8 @@ import cv2
 import pandas as pd
 import plotly.graph_objs as go
 import json
+from copy import deepcopy
+
 
 # external JavaScript files
 external_scripts = [
@@ -136,18 +138,21 @@ def create_image_figure(image_path):
 
 def create_figure_cropped_box(image_path, coords):
     # Load the image
+    print(coords)
     imagen = Image.open(image_path)
-    width, height = imagen.size
-
-    # Setting the points for cropped image
-    left = 5
-    top = height / 2
-    right = 164
-    bottom = 3 * height / 4
-
-    imagen = imagen.crop((left, top, right, bottom))
+    imo_w, imo_h = imagen.size
+    print(imagen)
     im_w, im_h = imagen.size
     # Create figure
+    print(imo_w, im_w)
+    coords2 = (500, 600, 2300, 2200)
+    coords3 = tuple(list(map(lambda x: 4*x, list(coords))))
+    a, b, c, d = coords3
+    coords4 = (a, im_w-c, b, d)
+    print(coords2)
+    print(coords3)
+    print(coords4)
+    imagen = imagen.crop(coords4)
     fig = go.Figure()
     # Constants
     img_width = im_w
@@ -351,7 +356,7 @@ app.layout = html.Div([
               [State('upload-image', 'filename'),
                State('upload-image', 'last_modified')])
 def update_output(list_of_contents, list_of_names, list_of_dates):
-    print(list_of_names[0])
+    # print(list_of_names[0])
     if list_of_contents is not None:
         children = [
             parse_contents(c, n, d) for c, n, d in
@@ -378,8 +383,9 @@ def display_selected_data(n_clicks, selected_data):
     print(raw_image_path)
     print('type data')
     x = selected_data["range"]['x']
-    y = selected_data["range"]['x']
+    y = selected_data["range"]['y']
     x.extend(y)
+    x = tuple(x)
     print(x)
     figure = create_figure_cropped_box(raw_image_path, x)
     return html.P(data), figure
