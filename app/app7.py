@@ -44,6 +44,7 @@ app = dash.Dash(
     external_stylesheets=external_stylesheets
 )
 
+raw_image_path = ''
 
 def parse_contents(contents, filename, date):
     return html.Div([
@@ -80,6 +81,7 @@ def parse_contents(contents, filename, date):
 
 def create_image_figure(image_path):
     # Load the image
+    raw_image_path = image_path
     imagen = Image.open(image_path)
     im_w, im_h = imagen.size
     # Create figure
@@ -172,43 +174,93 @@ app.layout = html.Div([
             dcc.Tab(label='Paso #2', children=[
                 html.H3('Paso #2'),
                 html.H2('Selección de areas'),
-                dcc.Graph(
-                    id='my-graph',
-                    # style={'height': 300},
-                    # figure=dict(
-                    #     data=[
-                    #         dict(
-                    #             x=[1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-                    #                2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012],
-                    #             y=[219, 146, 112, 127, 124, 180, 236, 207, 236, 263,
-                    #                350, 430, 474, 526, 488, 537, 500, 439],
-                    #             name='Rest of world',
-                    #             marker=dict(
-                    #                 color='rgb(55, 83, 109)'
-                    #             )
-                    #         ),
-                    #         dict(
-                    #             x=[1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-                    #                2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012],
-                    #             y=[16, 13, 10, 11, 28, 37, 43, 55, 56, 88, 105, 156, 270,
-                    #                299, 340, 403, 549, 499],
-                    #             name='China',
-                    #             marker=dict(
-                    #                 color='rgb(26, 118, 255)'
-                    #             )
-                    #         )
-                    #     ],
-                    #     layout=dict(
-                    #         title='US Export of Plastic Crap',
-                    #         showlegend=True,
-                    #         legend=dict(
-                    #             x=0,
-                    #             y=1.0
-                    #         ),
-                    #         margin=dict(l=40, r=0, t=40, b=30)
-                    #     )
-                    # )
-                ),
+                html.H2('Especificación de áreas'),
+                html.P(
+                    'A continuación delimita el área correspondiente a la mordida, la cuña de medicion y la guia.'),
+                html.Div([
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader([
+                                        dbc.Row([
+                                            dbc.Col(
+                                                html.H4("Imagen cargada"),
+                                                width=8,
+                                            ),
+                                        ]),
+                                    ]),
+                                    dbc.CardBody(
+                                        [
+                                            dcc.Graph(
+                                                id='my-graph',
+                                            ),
+                                        ]
+                                    ),
+                                    dbc.CardFooter([
+                                        html.H6('Tipo de área a especificar'),
+                                        dbc.Row([
+                                            dbc.Col([
+                                                dbc.Button("Mordida", id='btn-mordida', color="primary",
+                                                           className="mr-1",
+                                                           block=True),
+                                            ]),
+                                            dbc.Col([
+                                                dbc.Button("Cuña de medición", id='btn-cuna', color="primary",
+                                                           className="mr-1", block=True),
+                                            ]),
+                                            dbc.Col([
+                                                dbc.Button("Guía", color="primary", id='btn-guia', className="mr-1",
+                                                           block=True),
+                                            ]),
+                                        ]),
+                                    ]),
+                                ],
+                                style={"width": "100%"},
+                            )
+                        ], width=8),
+                        dbc.Col([
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(html.H6("Mordida")),
+                                    dbc.CardBody(
+                                        [
+                                            dcc.Graph(
+                                                id='mordida-graph',
+                                            ),
+                                            html.Div(id='coordinates-div'),
+                                        ]
+                                    ),
+                                ],
+                                style={"width": "100%"},
+                            ),
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(html.H6("Cuña de medición")),
+                                    dbc.CardBody(
+                                        [
+                                            dcc.Graph(
+                                                id='cuna-graph',
+                                            ),                                        ]
+                                    ),
+                                ],
+                                style={"width": "100%"},
+                            ),
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(html.H6("Guía de medición")),
+                                    dbc.CardBody(
+                                        [
+                                            dcc.Graph(
+                                                id='guia-graph',
+                                            ),]
+                                    ),
+                                ],
+                                style={"width": "100%"},
+                            ),
+                        ], width=4),
+                    ]),
+                ]),
                 html.Pre(id='selected-data'),
             ]),
         ],
@@ -250,6 +302,15 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
     [Input('my-graph', 'selectedData')])
 def display_selected_data(selectedData):
     return json.dumps(selectedData, indent=2)
+
+
+@app.callback(
+    Output('coordinates-div', 'children'),
+    [Input('btn-mordida', 'n_clicks')],
+    [State('my-graph', 'selectedData')])
+def display_selected_data(n_clicks, selected_data):
+    data = json.dumps(selected_data, indent=2)
+    return html.P(data)
 
 
 if __name__ == '__main__':
