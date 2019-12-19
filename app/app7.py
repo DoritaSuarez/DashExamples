@@ -47,6 +47,9 @@ app = dash.Dash(
 )
 
 raw_image_path = ''
+global_cropped_bite = None
+global_cropped_wedge = None
+global_cropped_guide = None
 
 def parse_contents(contents, filename, date):
     return html.Div([
@@ -136,7 +139,7 @@ def create_image_figure(image_path):
     return fig
 
 
-def create_figure_cropped_box(image_path, coords, factor=250):
+def create_figure_cropped_box(image_path, coords, cut_type, factor=250):
     # Load the image
     print(coords)
     imagen = Image.open(image_path)
@@ -152,6 +155,15 @@ def create_figure_cropped_box(image_path, coords, factor=250):
     print(coords3)
     print(coords4)
     imagen = imagen.crop(coords4)
+    if cut_type == 'bite':
+        global global_cropped_bite
+        global_cropped_bite=coords4
+    elif cut_type == 'wedge':
+        global global_cropped_wedge
+        global_cropped_wedge=coords4
+    elif cut_type == 'guide':
+        global global_cropped_guide
+        global_cropped_guide = coords4
     fig = go.Figure()
     im_w, im_h = imagen.size
     print(imagen.size) 
@@ -485,8 +497,8 @@ def display_selected_data(n_clicks, selected_data):
     x.extend(y)
     x = tuple(x)
     print(x)
-    figure = create_figure_cropped_box(raw_image_path, x)
-    figure_zoomed = create_figure_cropped_box(raw_image_path, x, 750)
+    figure = create_figure_cropped_box(raw_image_path, x, 'bite')
+    figure_zoomed = create_figure_cropped_box(raw_image_path, x, 'bite', 750)
     return html.P(), figure, figure_zoomed
 
 
@@ -505,7 +517,7 @@ def display_selected_data(n_clicks, selected_data):
     x.extend(y)
     x = tuple(x)
     print(x)
-    figure = create_figure_cropped_box(raw_image_path, x)
+    figure = create_figure_cropped_box(raw_image_path, x, 'wedge')
     return html.P(), figure
 
 
@@ -524,7 +536,7 @@ def display_selected_data(n_clicks, selected_data):
     x.extend(y)
     x = tuple(x)
     print(x)
-    figure = create_figure_cropped_box(raw_image_path, x)
+    figure = create_figure_cropped_box(raw_image_path, x, 'guide')
     return html.P(), figure
 
 
@@ -532,6 +544,9 @@ def display_selected_data(n_clicks, selected_data):
     Output('selected-data', 'children'),
     [Input('especificacion-piezas', 'selectedData')])
 def display_selected_data(selectedData):
+    print(global_cropped_bite)
+    print(global_cropped_wedge)
+    print(global_cropped_guide)
     return json.dumps(selectedData, indent=2)
 
 
