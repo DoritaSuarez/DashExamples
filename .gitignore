@@ -4,3 +4,4 @@ git /app/data/
 /app/.ipynb_checkpoints/
 app/__pycache__/
 .idea/
+/app/data/

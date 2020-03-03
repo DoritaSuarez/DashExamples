@@ -491,7 +491,11 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
     area_contact = (1 / mm ** 2) * contact
     area_close = (1 / mm ** 2) * close
 
-    return area_contact, area_close
+    clasi = classification.astype(np.uint8)
+    ret, thresh = cv2.threshold(clasi, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    n_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(thresh)
+
+    return area_contact, area_close, n_labels
 
 
 app.layout = html.Div([
@@ -850,6 +854,8 @@ def display_selected_data(n_clicks, selectedData):
         html.Div(round(salida[0], 4)),
         html.H6('Contacto cercano'),
         html.Div(round(salida[1], 4)),
+        html.H6('Número de contactos'),
+        html.Div(round(salida[2], 4)),
     ])
     # return json.dumps(selectedData, indent=2), figure
     return torender, figure
@@ -874,6 +880,8 @@ def display_selected_data(n_clicks, selectedData):
         html.Div(round(salida[0], 4)),
         html.H6('Contacto cercano'),
         html.Div(round(salida[1], 4)),
+        html.H6('Número de contactos'),
+        html.Div(round(salida[2], 4)),
     ])
     return torender, figure
 
@@ -897,6 +905,8 @@ def display_selected_data(n_clicks, selectedData):
         html.Div(round(salida[0], 4)),
         html.H6('Contacto cercano'),
         html.Div(round(salida[1], 4)),
+        html.H6('Número de contactos'),
+        html.Div(round(salida[2], 4)),
     ])
     return torender, figure
 
@@ -920,6 +930,8 @@ def display_selected_data(n_clicks, selectedData):
         html.Div(round(salida[0], 4)),
         html.H6('Contacto cercano'),
         html.Div(round(salida[1], 4)),
+        html.H6('Número de contactos'),
+        html.Div(round(salida[2], 4)),
     ])
     return torender, figure
 
@@ -942,6 +954,8 @@ def display_selected_data(n_clicks, selectedData):
         html.Div(round(salida[0], 4)),
         html.H6('Contacto cercano'),
         html.Div(round(salida[1], 4)),
+        html.H6('Número de contactos'),
+        html.Div(round(salida[2], 4)),
     ])
     return torender, figure
 
@@ -965,6 +979,8 @@ def display_selected_data(n_clicks, selectedData):
         html.Div(round(salida[0], 4)),
         html.H6('Contacto cercano'),
         html.Div(round(salida[1], 4)),
+        html.H6('Número de contactos'),
+        html.Div(round(salida[2], 4)),
     ])
     return torender, figure
 
@@ -988,6 +1004,8 @@ def display_selected_data(n_clicks, selectedData):
         html.Div(round(salida[0], 4)),
         html.H6('Contacto cercano'),
         html.Div(round(salida[1], 4)),
+        html.H6('Número de contactos'),
+        html.Div(round(salida[2], 4)),
     ])
     return torender, figure
 
@@ -1011,6 +1029,8 @@ def display_selected_data(n_clicks, selectedData):
         html.Div(round(salida[0], 4)),
         html.H6('Contacto cercano'),
         html.Div(round(salida[1], 4)),
+        html.H6('Número de contactos'),
+        html.Div(round(salida[2], 4)),
     ])
     return torender, figure
 
