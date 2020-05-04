@@ -1,46 +1,26 @@
-// import Cropper from 'cropperjs';
+// var scriptCrop = document.createElement('script');
+// scriptCrop.setAttribute('src','https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js');
+// document.head.appendChild(scriptCrop);
 
 var alto = 0;
 var ancho = 0;
-const inicioX = 0;
-const inicioY = 0;
+var inicioX = 0;
+var inicioY = 0;
+var finX = 0;
+var finY = 0;
 
 var input = false
 var srcExt = "Samsung.png"
 
+
 function readURL(input) {
-    if (input.files && input.files[0]) {
-        this.input = true;
-
-        var reader = new FileReader();
-
-        reader.onload = function (e) {
-            document.querySelector('img#blah')
-                .setAttribute('src', e.target.result);
-
-            console.log("Aqui se carga la mordida");
-            // setTimeout(()=>{                
-                document.querySelector('img#mordida')
-                    .setAttribute('src', e.target.result);
-                setTimeout(() => {
-                    crop = document.querySelector("#mordida")
-                    var cropper = new Cropper(crop, options);
-                    data = cropper.getCropBoxData()
-                    var sale = this.cropper.getCroppedCanvas().toDataURL('image/png')
-                    console.log(sale)
-                
-                    console.log(cropper)
-                    console.log(data)
-                }, 100)
-                
-            // }, 100)
-            console.log("Asignado");
-        };
-
-        this.srcExt = this.src
-
-        reader.readAsDataURL(input.files[0]);
-    }
+    setTimeout(() => {
+        crop = document.querySelector("#mordida")
+        var cropper = new Cropper(crop, options);
+        data = cropper.getCropBoxData()
+        console.log(cropper)
+        console.log(data)
+    }, 100)
 }
 
 setTimeout(() => {
@@ -82,16 +62,19 @@ var options = {
         console.log(e.type, e.detail.ratio);
     },
     crop(event) {
-        this.inicioX = event.detail.x;
-        // console.log(this.inicioX)
-        console.log(event.detail.x)
-        this.inicioY = event.detail.y;
-        this.ancho = event.detail.width;
-        this.alto = event.detail.height;
-        document.querySelector("div#ancho").innerText = event.detail.width.toString()
-        document.querySelector("div#alto").innerText = event.detail.height.toString()
-        document.querySelector("div#iniciox").innerText = event.detail.x.toString()
-        document.querySelector("div#inicioy").innerText = event.detail.y.toString()
+        this.inicioX = Math.round(event.detail.x                        )   ;
+        this.inicioY = Math.round(event.detail.y                        )   ;
+        this.ancho   = Math.round(event.detail.width                    )   ;
+        this.alto    = Math.round(event.detail.height                   )   ;
+        this.finX    = Math.round((event.detail.width + event.detail.x) )   ;
+        this.finY    = Math.round((event.detail.height + event.detail.y))   ;
+
+        document.querySelector("div#ancho").innerHTML = this.ancho.toString()
+        document.querySelector("div#alto").innerHTML = this.alto.toString()
+        document.querySelector("div#iniciox").innerHTML = this.inicioX.toString()
+        document.querySelector("div#inicioy").innerHTML = this.inicioY.toString()
+        document.querySelector("div#finx").innerHTML = this.finX.toString()
+        document.querySelector("div#finy").innerHTML = this.finY.toString()
         // console.log("InicioX", this.inicioX)
     }
 };

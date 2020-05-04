@@ -6,7 +6,31 @@ from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+# external JavaScript files
+external_scripts = [
+    'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js',
+    {'src': 'assets/prueba.js'},
+    {
+        'src': 'https://code.jquery.com/jquery-3.3.1.slim.min.js',
+        'integrity': 'sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo',
+        'crossorigin': 'anonymous'
+    },
+    {
+        'src': 'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js',
+        'integrity': 'sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1',
+        'crossorigin': 'anonymous'
+    },
+    {
+        'src': 'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js',
+        'integrity': 'sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM',
+        'crossorigin': 'anonymous'
+    },
+]
+
+# external CSS stylesheets
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
+                        'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css',
+                        'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -28,6 +52,13 @@ tab_selected_style = {
 }
 
 app.layout = html.Div([
+    html.Div(className='row',
+             children=[
+                 html.Img(className='logo', width='91', height='81', src='assets/logo_CRI.png', alt=''),
+                 html.Img(className='logo', src='assets/logo_Baylor.png', alt=''),
+                 html.Img(className='logo', src='assets/logo_CES.png', alt=''),
+                ]
+             ),
     dcc.Tabs(id="tabs-styled-with-inline", value='tab-1', children=[
         dcc.Tab(label='Carga de imagen', value='tab-1', style=tab_style, selected_style=tab_selected_style, children=[
             html.H3('Menú de carga de imagen'),
@@ -52,15 +83,27 @@ app.layout = html.Div([
                 multiple=True
             ),
             html.Div(id='output-image-upload'),
+
         ]),
-        dcc.Tab(label='Seleccion de las areas', value='tab-2', style=tab_style, selected_style=tab_selected_style, children=[
-            html.Div(id='another-output-image-upload'),
-        ]),
+        dcc.Tab(label='Seleccion de las areas', value='tab-2', style=tab_style, selected_style=tab_selected_style,
+                children=[
+
+                    html.Div(className='row', children=[
+                         html.Div(className='col-sm-4', children=[
+                            html.Div(className='card card-twitter', children=[
+                                html.Div(id='mordidadiv', className='card-cont', children=[
+                                    html.Div(id='another-output-image-upload'),
+                                ])
+                            ])
+                         ])
+                     ])
+                ]),
         dcc.Tab(label='Seleccion dientes', value='tab-3', style=tab_style, selected_style=tab_selected_style),
         dcc.Tab(label='Resultados', value='tab-4', style=tab_style, selected_style=tab_selected_style),
     ], style=tabs_styles),
     html.Div(id='tabs-content-inline')
 ])
+
 
 def parse_contents(contents, filename, date):
     return html.Div([
@@ -78,6 +121,7 @@ def parse_contents(contents, filename, date):
         })
     ])
 
+
 @app.callback(Output('output-image-upload', 'children'),
               [Input('upload-image', 'contents')],
               [State('upload-image', 'filename'),
@@ -89,6 +133,7 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
             zip(list_of_contents, list_of_names, list_of_dates)]
         return children
 
+
 @app.callback(Output('another-output-image-upload', 'children'),
               [Input('upload-image', 'contents')],
               [State('upload-image', 'filename'),
@@ -99,6 +144,7 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
             parse_contents(c, n, d) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
         return children
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

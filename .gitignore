@@ -1,0 +1,7 @@
+git /app/data/
+/app/.idea/
+/.ipynb_checkpoints/
+/app/.ipynb_checkpoints/
+app/__pycache__/
+.idea/
+/app/data/

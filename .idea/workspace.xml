@@ -2,10 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5132808a-d6a9-473a-9672-39e55688fa46" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/app/app5.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app2.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/app6.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app6.py" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,21 +20,26 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="JupyterTrust" id="6e9adfb8-1600-4312-9e34-4887cd7b14d9" />
   <component name="ProjectId" id="1U5l1VcjPb61lawiIigBflYWIOZ" />
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../CURSOS TOMADOS/DS4A/Week 4/extended_case_4_student/extended_case_4_student" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS" />
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
       <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
       </list>
     </option>
   </component>
@@ -49,7 +53,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1574654121957</updated>
-      <workItem from="1574654125238" duration="4095000" />
+      <workItem from="1574654125238" duration="9287000" />
+      <workItem from="1574732422726" duration="670000" />
+      <workItem from="1574900617192" duration="13828000" />
+      <workItem from="1575177775350" duration="14208000" />
+      <workItem from="1575259791703" duration="33650000" />
+      <workItem from="1575510083735" duration="4184000" />
     </task>
     <servers />
   </component>
@@ -61,10 +70,18 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
     </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="311" y="75" key="SettingsEditor" timestamp="1576709388134">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="311" y="75" key="SettingsEditor/0.0.1600.860@0.0.1600.860" timestamp="1576709388134" />
   </component>
 </project>
