@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import dash_table
 import visdcc
 import importlib
 from PIL import Image, ImageOps, ImageChops, ImageFilter
@@ -16,8 +17,7 @@ import json
 from copy import deepcopy
 from numba import vectorize, float64, int64
 import functools
-
-
+import urllib.parse
 
 # external JavaScript files
 external_scripts = [
@@ -46,13 +46,17 @@ external_stylesheets = [
 app = dash.Dash(
     __name__,
     external_scripts=external_scripts,
-    external_stylesheets=external_stylesheets
+    external_stylesheets=external_stylesheets,
+    suppress_callback_exceptions=True
 )
 
 raw_image_path = ''
 global_cropped_bite = None
 global_cropped_wedge = None
 global_cropped_guide = None
+
+contact_init_data = [[f"Diente {index}", 0, 0, 0] for index in range(1, 9)]
+contact_table = pd.DataFrame(contact_init_data, columns=["Diente", "Contactos", "ContactoCercano", "NumContactos"])
 
 def parse_contents(contents, filename, date):
     return html.Div([
@@ -98,7 +102,7 @@ def create_image_figure(image_path):
     # Constants
     img_width = im_w
     img_height = im_h
-    scale_factor = 550/im_w
+    scale_factor = 550 / im_w
     # Add invisible scatter trace.
     # This trace is added to help the autoresize logic work.
     fig.add_trace(
@@ -151,29 +155,29 @@ def create_figure_cropped_box(image_path, coords, cut_type, factor=250):
     # Create figure
     print(imo_w, imo_w)
     coords2 = (500, 600, 2300, 2200)
-    coords3 = tuple(list(map(lambda x: (imo_w/550)*x, list(coords))))
+    coords3 = tuple(list(map(lambda x: (imo_w / 550) * x, list(coords))))
     a, b, c, d = coords3
-    coords4 = (a, imo_h-d, b, imo_h-c)
+    coords4 = (a, imo_h - d, b, imo_h - c)
     print(coords2)
     print(coords3)
     print(coords4)
     imagen = imagen.crop(coords4)
     if cut_type == 'bite':
         global global_cropped_bite
-        global_cropped_bite=coords4
+        global_cropped_bite = coords4
     elif cut_type == 'wedge':
         global global_cropped_wedge
-        global_cropped_wedge=coords4
+        global_cropped_wedge = coords4
     elif cut_type == 'guide':
         global global_cropped_guide
         global_cropped_guide = coords4
     fig = go.Figure()
     im_w, im_h = imagen.size
-    print(imagen.size) 
+    print(imagen.size)
     # Constants
     img_width = im_w
     img_height = im_h
-    scale_factor = factor/im_w
+    scale_factor = factor / im_w
     # Add invisible scatter trace.
     # This trace is added to help the autoresize logic work.
     fig.add_trace(
@@ -226,13 +230,13 @@ def create_figure_cropped_lasso(image_path, xs, ys):
     imo_w, imo_h = imagen.size
     img_width = imo_w
     img_height = imo_h
-    scale_factor_a = 750/imo_w
-    scale_factor = 200/imo_w
+    scale_factor_a = 750 / imo_w
+    scale_factor = 200 / imo_w
     # Create figure
     print(imo_w, imo_w)
     # create tuple of tuples
-    x = list(map(lambda x: round(x*1/scale_factor_a), xs))
-    y = list(map(lambda x: round(img_height - x*1/scale_factor_a), ys))
+    x = list(map(lambda x: round(x * 1 / scale_factor_a), xs))
+    y = list(map(lambda x: round(img_height - x * 1 / scale_factor_a), ys))
     coordenadas_nuevas = list(zip(x, y))
     print("Es el otro CutParams")
     print(coordenadas_nuevas)
@@ -241,16 +245,17 @@ def create_figure_cropped_lasso(image_path, xs, ys):
     @vectorize([int64(float64)])
     def redondear(x):
         return x
-    cut_params = coordenadas_nuevas# [(150,1100),(220,820),(450.40,800),(400,1200.18)]
+
+    cut_params = coordenadas_nuevas  # [(150,1100),(220,820),(450.40,800),(400,1200.18)]
     cut_params = redondear(cut_params)
     pts = np.array(cut_params)
 
     ## (1) Crop the bounding rect
     rect = cv2.boundingRect(pts)
-    x,y,w,h = rect
+    x, y, w, h = rect
 
     imagen = np.array(imagen)
-    croped = imagen[y:y+h, x:x+w].copy()
+    croped = imagen[y:y + h, x:x + w].copy()
     ## (2) make mask
 
     pts = pts - pts.min(axis=0)
@@ -260,7 +265,7 @@ def create_figure_cropped_lasso(image_path, xs, ys):
     imagen = cv2.bitwise_and(croped, croped, mask=mask)
     imagen = Image.fromarray(imagen)
     ## (4) add the white background
-    bg = np.ones_like(croped, np.uint8)*255
+    bg = np.ones_like(croped, np.uint8) * 255
     fig = go.Figure()
     im_w, im_h = imagen.size
 
@@ -323,24 +328,25 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
     imo_w, imo_h = imagen_bit.size
     img_width = imo_w
     img_height = imo_h
-    scale_factor_a = 750/imo_w
-    x = list(map(lambda x: round(x*1/scale_factor_a), x))
-    y = list(map(lambda x: round(img_height - x*1/scale_factor_a), y))
+    scale_factor_a = 750 / imo_w
+    x = list(map(lambda x: round(x * 1 / scale_factor_a), x))
+    y = list(map(lambda x: round(img_height - x * 1 / scale_factor_a), y))
     cut_params = list(zip(x, y))
     print(cut_params)
 
     def change_contrast(img, level):
         factor = (259 * (level + 255)) / (255 * (259 - level))
+
         def contrast(c):
             return 128 + factor * (c - 128)
+
         return img.point(contrast)
 
     guide_cont = change_contrast(image, 100)
     guide_cont = np.array(guide_cont.crop(guide_params))
     guide_cont = cv2.cvtColor(guide_cont, cv2.COLOR_BGR2GRAY)
 
-
-    mid = round(guide_cont.shape[0]/2)
+    mid = round(guide_cont.shape[0] / 2)
     print(guide_cont[mid])
     print("mid")
     # print(mid)
@@ -363,7 +369,6 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
     print("pix")
     print(pix)
     mm = round(np.mean(np.diff(pix)))
-
 
     wedge_w = []
     for i in range(wedge.shape[0]):
@@ -438,6 +443,7 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y):
     dst = cv2.bitwise_and(croped, croped, mask=mask)
 
     print('dst')
+
     # print(dst)
 
     ## (4) add the white background
@@ -514,7 +520,7 @@ app.layout = html.Div([
                 html.H3('Paso #1'),
                 html.H2('Carga de imagen'),
                 html.P(['Por favor selecciona o arrastra la imagen a analizar. Recuerda que la imagen debe contener el '
-                       'registro de mordida, el circulo y la regleta de calibración.']),
+                        'registro de mordida, el circulo y la regleta de calibración.']),
                 dcc.Upload(
                     id='upload-image',
                     children=html.Div([
@@ -737,6 +743,22 @@ app.layout = html.Div([
                         html.Pre(id='selected-data8'),
                     ], width=3, style={'padding': '0px'}),
                 ]),
+                dbc.Row(
+                    dash_table.DataTable(
+                        id='table',
+                        columns=[{"name": i, "id": i} for i in contact_table.columns],
+                        data=contact_table.to_dict('records'),
+                    )
+                ),
+                dbc.Row(
+                    html.A(
+                        'Download Data',
+                        id='download-link',
+                        download="rawdata.csv",
+                        href="",
+                        target="_blank"
+                    )
+                )
             ])
         ],
         style={
@@ -756,6 +778,24 @@ app.layout = html.Div([
         }
     )
 ])
+
+
+@app.callback(
+    Output('download-link', 'href'),
+    [Input('diente1-btn', 'n_clicks'),
+     Input('diente2-btn', 'n_clicks'),
+     Input('diente3-btn', 'n_clicks'),
+     Input('diente4-btn', 'n_clicks'),
+     Input('diente5-btn', 'n_clicks'),
+     Input('diente6-btn', 'n_clicks'),
+     Input('diente7-btn', 'n_clicks'),
+     Input('diente8-btn', 'n_clicks'),
+     ])
+def update_download_link(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8):
+    dff = contact_table
+    csv_string = dff.to_csv(index=False, encoding='utf-8')
+    csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(csv_string)
+    return csv_string
 
 
 @app.callback([Output('output-image-upload', 'children'),
@@ -836,28 +876,13 @@ def display_selected_data(n_clicks, selected_data):
     [Output('selected-data1', 'children'),
      Output('diente1-graph', 'figure')],
     [Input('diente1-btn', 'n_clicks')],
-    [State('especificacion-piezas', 'selectedData')],)
+    [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
-    print(global_cropped_bite)
-    print(global_cropped_wedge)
-    print(global_cropped_guide)
-    print(raw_image_path)
-    x = selectedData["lassoPoints"]["x"]
-    y = selectedData["lassoPoints"]["y"]
-    figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    print('paso anterior al calculo de todo')
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
-    print('ya está salida calculado')
-    print(salida)
-    torender = html.Div([
-        html.H6('Contacto'),
-        html.Div(round(salida[0], 4)),
-        html.H6('Contacto cercano'),
-        html.Div(round(salida[1], 4)),
-        html.H6('Número de contactos'),
-        html.Div(round(salida[2], 4)),
-    ])
-    # return json.dumps(selectedData, indent=2), figure
+    # print(global_cropped_bite)
+    # print(global_cropped_wedge)
+    # print(global_cropped_guide)
+    # print(raw_image_path)
+    torender, figure = transformLassoPoints(selectedData, 1)
     return torender, figure
 
 
@@ -865,24 +890,9 @@ def display_selected_data(n_clicks, selectedData):
     [Output('selected-data2', 'children'),
      Output('diente2-graph', 'figure')],
     [Input('diente2-btn', 'n_clicks')],
-    [State('especificacion-piezas', 'selectedData')],)
+    [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
-    print(global_cropped_bite)
-    print(global_cropped_wedge)
-    print(global_cropped_guide)
-    print(raw_image_path)
-    x = selectedData["lassoPoints"]["x"]
-    y = selectedData["lassoPoints"]["y"]
-    figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
-    torender = html.Div([
-        html.H6('Contacto'),
-        html.Div(round(salida[0], 4)),
-        html.H6('Contacto cercano'),
-        html.Div(round(salida[1], 4)),
-        html.H6('Número de contactos'),
-        html.Div(round(salida[2], 4)),
-    ])
+    torender, figure = transformLassoPoints(selectedData, 2)
     return torender, figure
 
 
@@ -890,24 +900,9 @@ def display_selected_data(n_clicks, selectedData):
     [Output('selected-data3', 'children'),
      Output('diente3-graph', 'figure')],
     [Input('diente3-btn', 'n_clicks')],
-    [State('especificacion-piezas', 'selectedData')],)
+    [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
-    print(global_cropped_bite)
-    print(global_cropped_wedge)
-    print(global_cropped_guide)
-    print(raw_image_path)
-    x = selectedData["lassoPoints"]["x"]
-    y = selectedData["lassoPoints"]["y"]
-    figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
-    torender = html.Div([
-        html.H6('Contacto'),
-        html.Div(round(salida[0], 4)),
-        html.H6('Contacto cercano'),
-        html.Div(round(salida[1], 4)),
-        html.H6('Número de contactos'),
-        html.Div(round(salida[2], 4)),
-    ])
+    torender, figure = transformLassoPoints(selectedData, 3)
     return torender, figure
 
 
@@ -915,48 +910,19 @@ def display_selected_data(n_clicks, selectedData):
     [Output('selected-data4', 'children'),
      Output('diente4-graph', 'figure')],
     [Input('diente4-btn', 'n_clicks')],
-    [State('especificacion-piezas', 'selectedData')],)
+    [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
-    print(global_cropped_bite)
-    print(global_cropped_wedge)
-    print(global_cropped_guide)
-    print(raw_image_path)
-    x = selectedData["lassoPoints"]["x"]
-    y = selectedData["lassoPoints"]["y"]
-    figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
-    torender = html.Div([
-        html.H6('Contacto'),
-        html.Div(round(salida[0], 4)),
-        html.H6('Contacto cercano'),
-        html.Div(round(salida[1], 4)),
-        html.H6('Número de contactos'),
-        html.Div(round(salida[2], 4)),
-    ])
+    torender, figure = transformLassoPoints(selectedData, 4)
     return torender, figure
+
 
 @app.callback(
     [Output('selected-data5', 'children'),
      Output('diente5-graph', 'figure')],
     [Input('diente5-btn', 'n_clicks')],
-    [State('especificacion-piezas', 'selectedData')],)
+    [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
-    print(global_cropped_bite)
-    print(global_cropped_wedge)
-    print(global_cropped_guide)
-    print(raw_image_path)
-    x = selectedData["lassoPoints"]["x"]
-    y = selectedData["lassoPoints"]["y"]
-    figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
-    torender = html.Div([
-        html.H6('Contacto'),
-        html.Div(round(salida[0], 4)),
-        html.H6('Contacto cercano'),
-        html.Div(round(salida[1], 4)),
-        html.H6('Número de contactos'),
-        html.Div(round(salida[2], 4)),
-    ])
+    torender, figure = transformLassoPoints(selectedData, 5)
     return torender, figure
 
 
@@ -964,24 +930,9 @@ def display_selected_data(n_clicks, selectedData):
     [Output('selected-data6', 'children'),
      Output('diente6-graph', 'figure')],
     [Input('diente6-btn', 'n_clicks')],
-    [State('especificacion-piezas', 'selectedData')],)
+    [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
-    print(global_cropped_bite)
-    print(global_cropped_wedge)
-    print(global_cropped_guide)
-    print(raw_image_path)
-    x = selectedData["lassoPoints"]["x"]
-    y = selectedData["lassoPoints"]["y"]
-    figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
-    torender = html.Div([
-        html.H6('Contacto'),
-        html.Div(round(salida[0], 4)),
-        html.H6('Contacto cercano'),
-        html.Div(round(salida[1], 4)),
-        html.H6('Número de contactos'),
-        html.Div(round(salida[2], 4)),
-    ])
+    torender, figure = transformLassoPoints(selectedData, 6)
     return torender, figure
 
 
@@ -989,24 +940,9 @@ def display_selected_data(n_clicks, selectedData):
     [Output('selected-data7', 'children'),
      Output('diente7-graph', 'figure')],
     [Input('diente7-btn', 'n_clicks')],
-    [State('especificacion-piezas', 'selectedData')],)
+    [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
-    print(global_cropped_bite)
-    print(global_cropped_wedge)
-    print(global_cropped_guide)
-    print(raw_image_path)
-    x = selectedData["lassoPoints"]["x"]
-    y = selectedData["lassoPoints"]["y"]
-    figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
-    torender = html.Div([
-        html.H6('Contacto'),
-        html.Div(round(salida[0], 4)),
-        html.H6('Contacto cercano'),
-        html.Div(round(salida[1], 4)),
-        html.H6('Número de contactos'),
-        html.Div(round(salida[2], 4)),
-    ])
+    torender, figure = transformLassoPoints(selectedData, 7)
     return torender, figure
 
 
@@ -1014,16 +950,31 @@ def display_selected_data(n_clicks, selectedData):
     [Output('selected-data8', 'children'),
      Output('diente8-graph', 'figure')],
     [Input('diente8-btn', 'n_clicks')],
-    [State('especificacion-piezas', 'selectedData')],)
+    [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
-    print(global_cropped_bite)
-    print(global_cropped_wedge)
-    print(global_cropped_guide)
-    print(raw_image_path)
-    x = selectedData["lassoPoints"]["x"]
-    y = selectedData["lassoPoints"]["y"]
+    torender, figure = transformLassoPoints(selectedData, 8)
+    return torender, figure
+
+
+@app.callback(
+    Output('table', 'data'),
+    [Input('diente1-btn', 'n_clicks'),
+     Input('diente2-btn', 'n_clicks'),
+     Input('diente3-btn', 'n_clicks'),
+     Input('diente4-btn', 'n_clicks'),
+     Input('diente5-btn', 'n_clicks'),
+     Input('diente6-btn', 'n_clicks'),
+     Input('diente7-btn', 'n_clicks'),
+     Input('diente8-btn', 'n_clicks')])
+def update_table(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8):
+    return contact_table.to_dict('records')
+
+
+def transformLassoPoints(selected_data, index):
+    x = selected_data["lassoPoints"]["x"]
+    y = selected_data["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge ,x,y)
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge, x, y)
     torender = html.Div([
         html.H6('Contacto'),
         html.Div(round(salida[0], 4)),
@@ -1032,8 +983,11 @@ def display_selected_data(n_clicks, selectedData):
         html.H6('Número de contactos'),
         html.Div(round(salida[2], 4)),
     ])
+
+    contact_table.loc[index-1] = [f'Diente {index}', round(salida[0], 4), round(salida[1], 4), round(salida[2], 4)]
+
     return torender, figure
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', debug=True)
