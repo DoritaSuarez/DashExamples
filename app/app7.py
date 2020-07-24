@@ -57,8 +57,8 @@ global_cropped_bite = None
 global_cropped_wedge = None
 global_cropped_guide = None
 
-contact_init_data = [[f"Diente {index}", 0, 0, 0] for index in range(1, 9)]
-contact_table = pd.DataFrame(contact_init_data, columns=["Diente", "Contactos", "ContactoCercano", "NumContactos"])
+contact_init_table = pd.DataFrame(columns=["tooth_id", "contact_id", "contact_area", "class"])
+contact_tables = [pd.DataFrame([[f"Tooth {index}", 0, 0, "undefined"]], columns=["tooth_id", "contact_id", "contact_area", "class"]) for index in range(1, 9)]
 
 def parse_contents(contents, filename, date):
     return html.Div([
@@ -575,8 +575,8 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
         return -np.sqrt(361 - w * w) + 19
     #     return -1/2*np.sqrt(22201-4*w*w)
     y = list(map(tomm, x))
-    y_pix = list(map(lambda w: round(w * mm), y))
-    x_pix = list(map(lambda w: round(w * mm), x))
+    y_pix = list(map(lambda w: np.abs(round(w * mm)), y))
+    x_pix = list(map(lambda w: np.abs(round(w * mm)), x))
     data_wedge_depth = pd.DataFrame({"x_mill": x, "y_mill": y, "y_pix": y_pix, "x_pix": x_pix})
     wedge_dd = data_wedge_depth.merge(data_wedge_dist)
     wedge_xd = wedge_dd.groupby("x_pix").median().reset_index()
@@ -661,7 +661,7 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
                                                           "Diente1")
     tooth_results = tooth_results.append(table_contact).append(table_close)
 
-    return area_cont, area_close, n_labels
+    return area_cont, area_close, n_labels, tooth_results
 
 # area_contact, area_close, n_labels
 
@@ -910,8 +910,8 @@ app.layout = html.Div([
                 dbc.Row(
                     dash_table.DataTable(
                         id='table',
-                        columns=[{"name": i, "id": i} for i in contact_table.columns],
-                        data=contact_table.to_dict('records'),
+                        columns=[{"name": i, "id": i} for i in contact_init_table.columns],
+                        data=contact_init_table.to_dict('records'),
                     )
                 ),
                 dbc.Row(
@@ -956,7 +956,11 @@ app.layout = html.Div([
      Input('diente8-btn', 'n_clicks'),
      ])
 def update_download_link(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8):
-    dff = contact_table
+
+    dff = contact_init_table
+    for table in contact_tables:
+        dff = dff.append(table)
+
     csv_string = dff.to_csv(index=False, encoding='utf-8')
     csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(csv_string)
     return csv_string
@@ -1131,14 +1135,19 @@ def display_selected_data(n_clicks, selectedData):
      Input('diente7-btn', 'n_clicks'),
      Input('diente8-btn', 'n_clicks')])
 def update_table(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8):
-    return contact_table.to_dict('records')
+    torender_table = contact_init_table
+    for table in contact_tables:
+        print("---------------------------- TABLES FOUND... -------------------")
+        print(table.to_string)
+        torender_table = torender_table.append(table)
+    return torender_table.to_dict('records')
 
 
 def transformLassoPoints(selected_data, index):
     x = selected_data["lassoPoints"]["x"]
     y = selected_data["lassoPoints"]["y"]
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
-    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge, x, y, "uno")
+    salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge, x, y, index)
     torender = html.Div([
         html.H6('Contacto'),
         html.Div(round(salida[0], 4)),
@@ -1148,7 +1157,9 @@ def transformLassoPoints(selected_data, index):
         html.Div(round(salida[2], 4)),
     ])
 
-    contact_table.loc[index-1] = [f'Diente {index}', round(salida[0], 4), round(salida[1], 4), round(salida[2], 4)]
+    contact_tables[index-1] = salida[3]
+    # print("---------------------------- UPDATING TABLES WITH... -------------------")
+    # print(contact_tables[index-1].to_string)
     return torender, figure
 
 
