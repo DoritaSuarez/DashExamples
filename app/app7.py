@@ -566,6 +566,7 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
     area_close = to_class_area["contact_area"][8]
     area_close = sum(to_class_area["contact_area"][list(range(1, 7))])
     tooth_results = to_class_area
+    n_labels = 1
     return area_cont, area_close, n_labels, tooth_results
 
 # area_contact, area_close, n_labels
