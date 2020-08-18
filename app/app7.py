@@ -329,9 +329,24 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
     image_bw = image.convert(mode="L")  # Transform to black and white
     imagen_bit = image_bw.crop(bite_params)
     print("Creacion de los bits")
+    # Searching contras automatic
+    def searchContrast(image1, bite_params1):
+        i = 0
+        white = 0
+        while(white < 254):
+            bite_contrast = change_contrast(image1, i)
+            bite_contrast1 = np.array(bite_contrast.crop(bite_params1))
+            bite1 = np.array(bite_contrast1)
+            bite = cv2.cvtColor(bite1, cv2.COLOR_BGR2GRAY)
+            temp = bite[0][list(range(np.round(int(len(bite[0])/6))))]
+            white = np.mean(temp)
+            i = i+1
+        return i-1*1.0
+
+    contast_value = searchContrast(image, bite_params)
     # BITE
     bite = np.array(image_bw.crop(bite_params))
-    bite_contrast = change_contrast(image, 60)
+    bite_contrast = change_contrast(image, contast_value)
     bite_contrast = np.array(bite_contrast.crop(bite_params))
     bite = np.array(bite_contrast)
     bite = cv2.cvtColor(bite,cv2.COLOR_BGR2GRAY)
@@ -340,7 +355,7 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
     guide = np.array(image_bw.crop(guide_params))
     # WEDGE
     wedge = np.array(image_bw.crop(wedge_params))
-    wedge_contrast = change_contrast(image, 60)
+    wedge_contrast = change_contrast(image, contast_value)
     wedge_contrast = np.array(wedge_contrast.crop(wedge_params))
     wedge = np.array(wedge_contrast)
     wedge = cv2.cvtColor(wedge,cv2.COLOR_BGR2GRAY)
@@ -566,7 +581,9 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
     area_close = to_class_area["contact_area"][8]
     area_close = sum(to_class_area["contact_area"][list(range(1, 7))])
     tooth_results = to_class_area
-    n_labels = 1
+    n_labels = table_contact.shape[0]-1
+    print("table_contact: ", table_contact)
+    print("tooth_results: ", tooth_results)
     return area_cont, area_close, n_labels, tooth_results
 
 # area_contact, area_close, n_labels
