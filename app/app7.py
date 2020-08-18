@@ -718,7 +718,7 @@ app.layout = html.Div([
                             id='diente1-graph',
                         ),
                         dbc.Button(
-                            "Diente 1",
+                            "Right - First premolar",
                             id='diente1-btn',
                             color="primary",
                             className="mr-1",
@@ -730,7 +730,7 @@ app.layout = html.Div([
                             id='diente2-graph',
                         ),
                         dbc.Button(
-                            "Diente 2",
+                            "Right - Second premolar",
                             id='diente2-btn',
                             color="primary",
                             className="mr-1",
@@ -742,7 +742,7 @@ app.layout = html.Div([
                             id='diente3-graph',
                         ),
                         dbc.Button(
-                            "Diente 3",
+                            "Right - First molar",
                             id='diente3-btn',
                             color="primary",
                             className="mr-1",
@@ -754,7 +754,7 @@ app.layout = html.Div([
                             id='diente4-graph',
                         ),
                         dbc.Button(
-                            "Diente 4",
+                            "Right - Second molar",
                             id='diente4-btn',
                             color="primary",
                             className="mr-1",
@@ -768,7 +768,7 @@ app.layout = html.Div([
                             id='diente5-graph',
                         ),
                         dbc.Button(
-                            "Diente 5",
+                            "Left -First premolar",
                             id='diente5-btn',
                             color="primary",
                             className="mr-1",
@@ -780,7 +780,7 @@ app.layout = html.Div([
                             id='diente6-graph',
                         ),
                         dbc.Button(
-                            "Diente 6",
+                            "Left -Second premolar",
                             id='diente6-btn',
                             color="primary",
                             className="mr-1",
@@ -792,7 +792,7 @@ app.layout = html.Div([
                             id='diente7-graph',
                         ),
                         dbc.Button(
-                            "Diente 7",
+                            "Left -First molar",
                             id='diente7-btn',
                             color="primary",
                             className="mr-1",
@@ -804,7 +804,7 @@ app.layout = html.Div([
                             id='diente8-graph',
                         ),
                         dbc.Button(
-                            "Diente 8",
+                            "Left -Second molar",
                             id='diente8-btn',
                             color="primary",
                             className="mr-1",
