@@ -6,7 +6,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_table
-import visdcc
+# import visdcc
 import importlib
 from PIL import Image, ImageOps, ImageChops, ImageFilter
 import numpy as np
@@ -63,30 +63,24 @@ contact_tables = [pd.DataFrame([[f"Tooth {index}", 0, 0, "undefined"]], columns=
 def parse_contents(contents, filename, date):
     return html.Div([
         dbc.Row([
-            html.H2('Imagen a analizar'),
-        ]),
-        dbc.Row([
             dbc.Col([
-                html.H5('Nombre del archivo'),
+                html.H3('Selected image'),
+                html.H6('File name'),
                 html.P(filename),
-                html.H5('Fecha de carga'),
+                html.H6('Load date'),
                 html.P(datetime.datetime.fromtimestamp(date)),
-                html.H5('Contenido crudo'),
+                html.H6('Raw content (binary)'),
                 html.P(contents[0:200] + '...', style={
                     'whiteSpace': 'pre-wrap',
                     'wordBreak': 'break-all'
                 }),
-            ], width=8),
+            ], width=8, align="center"),
             dbc.Col([
                 dbc.Card(
                     [
-                        dbc.CardBody(
-                            [
-                                dbc.CardImg(id='card-img-input', src=contents, top=True),
-                            ]
-                        ),
+                        dbc.CardImg(id='card-img-input', src=contents, top=True)
                     ],
-                    style={"width": "100%"},
+                    style={"widthb  ": "100%"},
                 ),
             ], width=4),
         ])
@@ -233,7 +227,7 @@ def create_figure_cropped_lasso(image_path, xs, ys):
     img_width = imo_w
     img_height = imo_h
     scale_factor_a = 750 / imo_w
-    scale_factor = 200 / imo_w
+    scale_factor = 170 / imo_w
     # Create figure
     print(imo_w, imo_w)
     # create tuple of tuples
@@ -593,7 +587,7 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
 
 app.layout = html.Div([
     html.H1(
-        'Análisis de Contactos Oclusales',
+        'Occlusal Contact Analysis',
         style={
             'textAlign': 'center',
             'margin': '48px 0',
@@ -603,16 +597,17 @@ app.layout = html.Div([
     dcc.Tabs(
         id="tabs",
         children=[
-            dcc.Tab(label='Paso #1', children=[
-                html.H3('Paso #1'),
-                html.H2('Carga de imagen'),
-                html.P(['Por favor selecciona o arrastra la imagen a analizar. Recuerda que la imagen debe contener el '
-                        'registro de mordida, el circulo y la regleta de calibración.']),
+            dcc.Tab(label='Step 1', children=[
+                html.H3('Step 1: Choose image'),
+                # html.H2('Carga de imagen'),
+                html.P(['You can choose the image by dragging the image to the load zone, or clicking on the load zone'
+                        ' to select the file using your browser. Remember that the image must contain the bite printing, '
+                        'the measuring wedge, and the calibration strip.']),
                 dcc.Upload(
                     id='upload-image',
                     children=html.Div([
                         'Drag and Drop or ',
-                        html.A('Select Files')
+                        html.A('Select a File')
                     ]),
                     style={
                         'width': '100%',
@@ -629,11 +624,14 @@ app.layout = html.Div([
                 ),
                 html.Div(id='output-image-upload'),
             ]),
-            dcc.Tab(label='Paso #2', children=[
-                html.H3('Paso #2'),
-                html.H2('Especificación de áreas'),
-                html.P(
-                    'A continuación delimita el área correspondiente a la mordida, la cuña de medicion y la guia.'),
+            dcc.Tab(label='Step 2', children=[
+                html.H3('Step 2: Image calibration'),
+                # html.H2('Especificación de áreas'),
+                html.P([
+                    'In the next step you need to specify the three areas related to the bite printing, the measuring wedge and the calibration strip. ',
+                    'Please use the ',
+                    html.Strong('Box Select'), ' tool to delimit each area.'
+                ]),
                 html.Div([
                     dbc.Row([
                         dbc.Col([
@@ -642,7 +640,7 @@ app.layout = html.Div([
                                     dbc.CardHeader([
                                         dbc.Row([
                                             dbc.Col(
-                                                html.H4("Imagen cargada"),
+                                                html.H6("Loaded image"),
                                                 width=8,
                                             ),
                                         ]),
@@ -651,23 +649,28 @@ app.layout = html.Div([
                                         [
                                             dcc.Graph(
                                                 id='my-graph',
+                                                figure={'layout': go.Layout(
+                                                    xaxis={'showgrid': False},
+                                                    yaxis={'showgrid': False}
+                                                )}
+                                                , style={"display": "none"}
                                             ),
                                         ]
                                     ),
                                     dbc.CardFooter([
-                                        html.H6('Tipo de área a especificar'),
+                                        html.H6('Type of area selected'),
                                         dbc.Row([
                                             dbc.Col([
-                                                dbc.Button("Mordida", id='btn-mordida', color="primary",
+                                                dbc.Button("Bite printing", id='btn-mordida', color="primary",
                                                            className="mr-1",
                                                            block=True),
                                             ]),
                                             dbc.Col([
-                                                dbc.Button("Cuña de medición", id='btn-cuna', color="primary",
+                                                dbc.Button("Measuring wedge", id='btn-cuna', color="primary",
                                                            className="mr-1", block=True),
                                             ]),
                                             dbc.Col([
-                                                dbc.Button("Guía", color="primary", id='btn-guia', className="mr-1",
+                                                dbc.Button("Calibration strip", color="primary", id='btn-guia', className="mr-1",
                                                            block=True),
                                             ]),
                                         ]),
@@ -679,39 +682,42 @@ app.layout = html.Div([
                         dbc.Col([
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H6("Mordida")),
+                                    dbc.CardHeader(html.H6("Bite printing")),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
-                                                id='mordida-graph',
+                                                id='mordida-graph'
+                                                , style={"display": "none"}
                                             ),
                                             html.Div(id='coordinates-div-mordida'),
                                         ]
                                     ),
                                 ],
-                                style={"width": "100%"},
+                                style={"width": "100%", "margin-bottom": "10px"},
                             ),
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H6("Cuña de medición")),
+                                    dbc.CardHeader(html.H6("Measuring wedge")),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
-                                                id='cuna-graph',
+                                                id='cuna-graph'
+                                                , style={"display": "none"}
                                             ),
                                             html.Div(id='coordinates-div-cuna'),
                                         ]
                                     ),
                                 ],
-                                style={"width": "100%"},
+                                style={"width": "100%", "margin-bottom": "10px"},
                             ),
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(html.H6("Guía de medición")),
+                                    dbc.CardHeader(html.H6("Calibration strip")),
                                     dbc.CardBody(
                                         [
                                             dcc.Graph(
-                                                id='guia-graph',
+                                                id='guia-graph'
+                                                , style={"display": "none"}
                                             ),
                                             html.Div(id='coordinates-div-guia'),
                                         ]
@@ -723,118 +729,328 @@ app.layout = html.Div([
                     ]),
                 ]),
             ]),
-            dcc.Tab(label='Paso #3', children=[
-                html.H3('Paso #3'),
-                html.H2('Especificación de piezas dentales'),
-                dcc.Graph(
-                    id='especificacion-piezas'
-                ),
-                dbc.Row([]),
+            dcc.Tab(label='Step 3', children=[
                 dbc.Row([
-                    dbc.Col([
-                        dcc.Graph(
-                            id='diente1-graph',
+                    html.H3('Step 3: Selection of dental pieces'),
+                    # html.H2('Especificación de piezas dentales'),
+                    html.P([
+                        'Select tooth by tooth using the ',
+                        html.Strong('Lasso Select'), ' tool. First select an area to be analyzed and then press each one of the buttons corresponding to the tooth selected. '
+                        'You will be able to download the report of the analysis at the end of the tooth selection process.',
+                    ]),
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H6("Bite printing"),
+                        ]),
+                        dbc.CardBody(
+                            [
+                                dcc.Graph(
+                                    id='especificacion-piezas',
+                                    figure={'layout': go.Layout(
+                                        xaxis={'showgrid': False},
+                                        yaxis={'showgrid': False}
+                                    )}
+                                    # , style={"display": "none"}
+                                ),
+                            ]
                         ),
-                        dbc.Button(
-                            "Right - First premolar",
-                            id='diente1-btn',
-                            color="primary",
-                            className="mr-1",
-                            block=False),
-                        html.Pre(id='selected-data1'),
-                    ], width=3, style={'padding': '0px'}),
-                    dbc.Col([
-                        dcc.Graph(
-                            id='diente2-graph',
-                        ),
-                        dbc.Button(
-                            "Right - Second premolar",
-                            id='diente2-btn',
-                            color="primary",
-                            className="mr-1",
-                            block=False),
-                        html.Pre(id='selected-data2'),
-                    ], width=3, style={'padding': '0px'}),
-                    dbc.Col([
-                        dcc.Graph(
-                            id='diente3-graph',
-                        ),
-                        dbc.Button(
-                            "Right - First molar",
-                            id='diente3-btn',
-                            color="primary",
-                            className="mr-1",
-                            block=False),
-                        html.Pre(id='selected-data3'),
-                    ], width=3, style={'padding': '0px'}),
-                    dbc.Col([
-                        dcc.Graph(
-                            id='diente4-graph',
-                        ),
-                        dbc.Button(
-                            "Right - Second molar",
-                            id='diente4-btn',
-                            color="primary",
-                            className="mr-1",
-                            block=False),
-                        html.Pre(id='selected-data4'),
-                    ], width=3, style={'padding': '0px'}),
-                ]),
-                dbc.Row([
-                    dbc.Col([
-                        dcc.Graph(
-                            id='diente5-graph',
-                        ),
-                        dbc.Button(
-                            "Left -First premolar",
-                            id='diente5-btn',
-                            color="primary",
-                            className="mr-1",
-                            block=False),
-                        html.Pre(id='selected-data5'),
-                    ], width=3, style={'padding': '0px'}),
-                    dbc.Col([
-                        dcc.Graph(
-                            id='diente6-graph',
-                        ),
-                        dbc.Button(
-                            "Left -Second premolar",
-                            id='diente6-btn',
-                            color="primary",
-                            className="mr-1",
-                            block=False),
-                        html.Pre(id='selected-data6'),
-                    ], width=3, style={'padding': '0px'}),
-                    dbc.Col([
-                        dcc.Graph(
-                            id='diente7-graph',
-                        ),
-                        dbc.Button(
-                            "Left -First molar",
-                            id='diente7-btn',
-                            color="primary",
-                            className="mr-1",
-                            block=False),
-                        html.Pre(id='selected-data7'),
-                    ], width=3, style={'padding': '0px'}),
-                    dbc.Col([
-                        dcc.Graph(
-                            id='diente8-graph',
-                        ),
-                        dbc.Button(
-                            "Left -Second molar",
-                            id='diente8-btn',
-                            color="primary",
-                            className="mr-1",
-                            block=False),
-                        html.Pre(id='selected-data8'),
-                    ], width=3, style={'padding': '0px'}),
+                    ],
+                    style={'width': '100%'}),
                 ]),
                 dbc.Row(
-                    dash_table.DataTable(
-                        id='table',
-                        columns=[{"name": i, "id": i} for i in contact_init_table.columns],
-                        data=contact_init_table.to_dict('records'),
+                    html.H3('Analysis results', style={'margin-top': '30px'}),
+                ),
+                dbc.Row(
+                    dbc.CardDeck([
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.H3('Right'),
+                                    html.H5("First premolar", className="card-title"),
+                                    dcc.Graph(
+                                        id='diente1-graph',
+                                        style={'display': 'none'}
+                                    ),
+                                    html.Pre(id='selected-data1',className='card-text'),
+                                    dbc.Button(
+                                        "Process",
+                                        id='diente1-btn',
+                                        color="primary",
+                                        className="mr-1",
+                                        block=False
+                                    ),
+                                ]
+                            ),
+                            style={'height': 'fit-content'}
+                        ),
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.H3('Right'),
+                                    html.H5("Second premolar", className="card-title"),
+                                    dcc.Graph(
+                                        id='diente2-graph',
+                                        style={'display': 'none'}
+                                    ),
+                                    html.Pre(id='selected-data2', className='card-text'),
+                                    dbc.Button(
+                                        "Process",
+                                        id='diente2-btn',
+                                        color="primary",
+                                        className="mr-1",
+                                        block=False
+                                    ),
+                                ]
+                            ),
+                            style={'height': 'fit-content'}
+                        ),
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.H3('Right'),
+                                    html.H5("First molar", className="card-title"),
+                                    dcc.Graph(
+                                        id='diente3-graph',
+                                        style={'display': 'none'}
+                                    ),
+                                    html.Pre(id='selected-data3', className='card-text'),
+                                    dbc.Button(
+                                        "Process",
+                                        id='diente3-btn',
+                                        color="primary",
+                                        className="mr-1",
+                                        block=False
+                                    ),
+                                ]
+                            ),
+                            style={'height': 'fit-content'}
+                        ),
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.H3('Right'),
+                                        html.H5("Second molar", className="card-title"),
+                                    dcc.Graph(
+                                        id='diente4-graph',
+                                        style={'display': 'none'}
+                                    ),
+                                    html.Pre(id='selected-data4', className='card-text'),
+                                    dbc.Button(
+                                        "Process",
+                                        id='diente4-btn',
+                                        color="primary",
+                                        className="mr-1",
+                                        block=False
+                                    ),
+                                ]
+                            ),
+                            style={'height': 'fit-content'}
+                        ),
+                    ])
+                ),
+                dbc.Row(
+                    dbc.CardDeck([
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.H3('Left'),
+                                    html.H5("First premolar", className="card-title"),
+                                    dcc.Graph(
+                                        id='diente5-graph',
+                                        style={'display': 'none'}
+                                    ),
+                                    html.Pre(id='selected-data5',className='card-text'),
+                                    dbc.Button(
+                                        "Process",
+                                        id='diente5-btn',
+                                        color="primary",
+                                        className="mr-1",
+                                        block=False
+                                    ),
+                                ]
+                            ),
+                            style={'height': 'fit-content'}
+                        ),
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.H3('Left'),
+                                    html.H5("Second premolar", className="card-title"),
+                                    dcc.Graph(
+                                        id='diente6-graph',
+                                        style={'display': 'none'}
+                                    ),
+                                    html.Pre(id='selected-data6', className='card-text'),
+                                    dbc.Button(
+                                        "Process",
+                                        id='diente6-btn',
+                                        color="primary",
+                                        className="mr-1",
+                                        block=False
+                                    ),
+                                ]
+                            ),
+                            style={'height': 'fit-content'}
+                        ),
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.H3('Left'),
+                                    html.H5("First molar", className="card-title"),
+                                    dcc.Graph(
+                                        id='diente7-graph',
+                                        style={'display': 'none'}
+                                    ),
+                                    html.Pre(id='selected-data7', className='card-text'),
+                                    dbc.Button(
+                                        "Process",
+                                        id='diente7-btn',
+                                        color="primary",
+                                        className="mr-1",
+                                        block=False
+                                    ),
+                                ]
+                            ),
+                            style={'height': 'fit-content'}
+                        ),
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    html.H3('Left'),
+                                        html.H5("Second molar", className="card-title"),
+                                    dcc.Graph(
+                                        id='diente8-graph',
+                                        style={'display': 'none'}
+                                    ),
+                                    html.Pre(id='selected-data8', className='card-text'),
+                                    dbc.Button(
+                                        "Process",
+                                        id='diente8-btn',
+                                        color="primary",
+                                        className="mr-1",
+                                        block=False
+                                    ),
+                                ]
+                            ),
+                            style={'height': 'fit-content'}
+                        )
+                    ], style={'margin-top': '30px'})
+                ),
+                dbc.Row([
+                    # dbc.Col([
+                    #     dcc.Graph(
+                    #         id='diente1-graph',
+                    #     ),
+                    #     dbc.Button(
+                    #         "Right - First premolar",
+                    #         id='diente1-btn',
+                    #         color="primary",
+                    #         className="mr-1",
+                    #         block=False),
+                    #     html.Pre(id='selected-data1'),
+                    # ], width=3, style={'padding': '0px'}),
+                    # dbc.Col([
+                    #     dcc.Graph(
+                    #         id='diente2-graph',
+                    #     ),
+                    #     dbc.Button(
+                    #         "Right - Second premolar",
+                    #         id='diente2-btn',
+                    #         color="primary",
+                    #         className="mr-1",
+                    #         block=False),
+                    #     html.Pre(id='selected-data2'),
+                    # ], width=3, style={'padding': '0px'}),
+                    # dbc.Col([
+                    #     dcc.Graph(
+                    #         id='diente3-graph',
+                    #     ),
+                    #     dbc.Button(
+                    #         "Right - First molar",
+                    #         id='diente3-btn',
+                    #         color="primary",
+                    #         className="mr-1",
+                    #         block=False),
+                    #     html.Pre(id='selected-data3'),
+                    # ], width=3, style={'padding': '0px'}),
+                    # dbc.Col([
+                    #     dcc.Graph(
+                    #         id='diente4-graph',
+                    #     ),
+                    #     dbc.Button(
+                    #         "Right - Second molar",
+                    #         id='diente4-btn',
+                    #         color="primary",
+                    #         className="mr-1",
+                    #         block=False),
+                    #     html.Pre(id='selected-data4'),
+                    # ], width=3, style={'padding': '0px'}),
+                ]),
+                dbc.Row([
+                    # dbc.Col([
+                    #     dcc.Graph(
+                    #         id='diente5-graph',
+                    #     ),
+                    #     dbc.Button(
+                    #         "Left -First premolar",
+                    #         id='diente5-btn',
+                    #         color="primary",
+                    #         className="mr-1",
+                    #         block=False),
+                    #     html.Pre(id='selected-data5'),
+                    # ], width=3, style={'padding': '0px'}),
+                    # dbc.Col([
+                    #     dcc.Graph(
+                    #         id='diente6-graph',
+                    #     ),
+                    #     dbc.Button(
+                    #         "Left -Second premolar",
+                    #         id='diente6-btn',
+                    #         color="primary",
+                    #         className="mr-1",
+                    #         block=False),
+                    #     html.Pre(id='selected-data6'),
+                    # ], width=3, style={'padding': '0px'}),
+                    # dbc.Col([
+                    #     dcc.Graph(
+                    #         id='diente7-graph',
+                    #     ),
+                    #     dbc.Button(
+                    #         "Left -First molar",
+                    #         id='diente7-btn',
+                    #         color="primary",
+                    #         className="mr-1",
+                    #         block=False),
+                    #     html.Pre(id='selected-data7'),
+                    # ], width=3, style={'padding': '0px'}),
+                    # dbc.Col([
+                    #     dcc.Graph(
+                    #         id='diente8-graph',
+                    #     ),
+                    #     dbc.Button(
+                    #         "Left -Second molar",
+                    #         id='diente8-btn',
+                    #         color="primary",
+                    #         className="mr-1",
+                    #         block=False),
+                    #     html.Pre(id='selected-data8'),
+                    # ], width=3, style={'padding': '0px'}),
+                ]),
+                dbc.Row([
+                    html.H3('Summary', style={'margin-top': '30px'}),
+                ]),
+                dbc.Row(
+                    dbc.Col(
+                        dash_table.DataTable(
+                            id='table',
+                            columns=[{"name": i, "id": i} for i in contact_init_table.columns],
+                            data=contact_init_table.to_dict('records'),
+                            style_header={'backgroundColor': 'rgb(30, 30, 30)'},
+                            style_cell={
+                                'backgroundColor': 'rgb(50, 50, 50)',
+                                'color': 'white'
+                            },
+                        )
                     )
                 ),
                 dbc.Row(
@@ -890,7 +1106,8 @@ def update_download_link(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8):
 
 
 @app.callback([Output('output-image-upload', 'children'),
-               Output('my-graph', 'figure')],
+               Output('my-graph', 'figure'),
+               Output('my-graph', 'style'),],
               [Input('upload-image', 'contents')],
               [State('upload-image', 'filename'),
                State('upload-image', 'last_modified')])
@@ -901,13 +1118,16 @@ def update_output(list_of_contents, list_of_names, list_of_dates):
             parse_contents(c, n, d) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
         figure = create_image_figure(list_of_names[0])
-        return children, figure
+        style = {"display": "block"}
+        return children, figure, style
 
 
 @app.callback(
     [Output('coordinates-div-mordida', 'children'),
      Output('mordida-graph', 'figure'),
-     Output('especificacion-piezas', 'figure')],
+     Output('especificacion-piezas', 'figure'),
+     Output('mordida-graph', 'style'),
+     ],
     [Input('btn-mordida', 'n_clicks')],
     [State('my-graph', 'selectedData')])
 def display_selected_data(n_clicks, selected_data):
@@ -922,12 +1142,15 @@ def display_selected_data(n_clicks, selected_data):
     print(x)
     figure = create_figure_cropped_box(raw_image_path, x, 'bite')
     figure_zoomed = create_figure_cropped_box(raw_image_path, x, 'bite', 750)
-    return html.P(), figure, figure_zoomed
+    style = {"display": "block"}
+    return html.P(), figure, figure_zoomed, style
 
 
 @app.callback(
     [Output('coordinates-div-cuna', 'children'),
-     Output('cuna-graph', 'figure')],
+     Output('cuna-graph', 'figure'),
+     Output('cuna-graph', 'style')
+     ],
     [Input('btn-cuna', 'n_clicks')],
     [State('my-graph', 'selectedData')])
 def display_selected_data(n_clicks, selected_data):
@@ -941,12 +1164,14 @@ def display_selected_data(n_clicks, selected_data):
     x = tuple(x)
     print(x)
     figure = create_figure_cropped_box(raw_image_path, x, 'wedge')
-    return html.P(), figure
+    style = {"display": "block"}
+    return html.P(), figure, style
 
 
 @app.callback(
     [Output('coordinates-div-guia', 'children'),
-     Output('guia-graph', 'figure')],
+     Output('guia-graph', 'figure'),
+     Output('guia-graph', 'style')],
     [Input('btn-guia', 'n_clicks')],
     [State('my-graph', 'selectedData')])
 def display_selected_data(n_clicks, selected_data):
@@ -960,12 +1185,14 @@ def display_selected_data(n_clicks, selected_data):
     x = tuple(x)
     print(x)
     figure = create_figure_cropped_box(raw_image_path, x, 'guide')
-    return html.P(), figure
+    style = {"display": "block"}
+    return html.P(), figure, style
 
 
 @app.callback(
     [Output('selected-data1', 'children'),
-     Output('diente1-graph', 'figure')],
+     Output('diente1-graph', 'figure'),
+     Output('diente1-graph', 'style')],
     [Input('diente1-btn', 'n_clicks')],
     [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
@@ -974,77 +1201,92 @@ def display_selected_data(n_clicks, selectedData):
     # print(global_cropped_guide)
     # print(raw_image_path)
     torender, figure = transformLassoPoints(selectedData, 1)
-    return torender, figure
+    style = {"display": "block", 'height': '50%', 'width': '50%'}
+    return torender, figure, style
 
 
 @app.callback(
     [Output('selected-data2', 'children'),
-     Output('diente2-graph', 'figure')],
+     Output('diente2-graph', 'figure'),
+     Output('diente2-graph', 'style')],
     [Input('diente2-btn', 'n_clicks')],
     [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
     torender, figure = transformLassoPoints(selectedData, 2)
-    return torender, figure
+    style = {"display": "block", 'height': '50%', 'width': '50%'}
+    return torender, figure, style
 
 
 @app.callback(
     [Output('selected-data3', 'children'),
-     Output('diente3-graph', 'figure')],
+     Output('diente3-graph', 'figure'),
+     Output('diente3-graph', 'style')],
     [Input('diente3-btn', 'n_clicks')],
     [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
     torender, figure = transformLassoPoints(selectedData, 3)
-    return torender, figure
+    style = {"display": "block", 'height': '50%', 'width': '50%'}
+    return torender, figure, style
 
 
 @app.callback(
     [Output('selected-data4', 'children'),
-     Output('diente4-graph', 'figure')],
+     Output('diente4-graph', 'figure'),
+     Output('diente4-graph', 'style')],
     [Input('diente4-btn', 'n_clicks')],
     [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
     torender, figure = transformLassoPoints(selectedData, 4)
-    return torender, figure
+    style = {"display": "block", 'height': '50%', 'width': '50%'}
+    return torender, figure, style
 
 
 @app.callback(
     [Output('selected-data5', 'children'),
-     Output('diente5-graph', 'figure')],
+     Output('diente5-graph', 'figure'),
+     Output('diente5-graph', 'style')],
     [Input('diente5-btn', 'n_clicks')],
     [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
     torender, figure = transformLassoPoints(selectedData, 5)
-    return torender, figure
+    style = {"display": "block", 'height': '50%', 'width': '50%'}
+    return torender, figure, style
 
 
 @app.callback(
     [Output('selected-data6', 'children'),
-     Output('diente6-graph', 'figure')],
+     Output('diente6-graph', 'figure'),
+     Output('diente6-graph', 'style')],
     [Input('diente6-btn', 'n_clicks')],
     [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
     torender, figure = transformLassoPoints(selectedData, 6)
-    return torender, figure
+    style = {"display": "block", 'height': '50%', 'width': '50%'}
+    return torender, figure, style
 
 
 @app.callback(
     [Output('selected-data7', 'children'),
-     Output('diente7-graph', 'figure')],
+     Output('diente7-graph', 'figure'),
+     Output('diente7-graph', 'style')],
     [Input('diente7-btn', 'n_clicks')],
     [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
     torender, figure = transformLassoPoints(selectedData, 7)
-    return torender, figure
+    style = {"display": "block", 'height': '50%', 'width': '50%'}
+    return torender, figure, style
 
 
 @app.callback(
     [Output('selected-data8', 'children'),
-     Output('diente8-graph', 'figure')],
+     Output('diente8-graph', 'figure'),
+     Output('diente8-graph', 'style')],
     [Input('diente8-btn', 'n_clicks')],
     [State('especificacion-piezas', 'selectedData')], )
 def display_selected_data(n_clicks, selectedData):
     torender, figure = transformLassoPoints(selectedData, 8)
-    return torender, figure
+    style = {"display": "block", 'height': '50%', 'width': '50%'}
+    return torender, figure, style
 
 
 @app.callback(
@@ -1072,12 +1314,12 @@ def transformLassoPoints(selected_data, index):
     figure = create_figure_cropped_lasso(raw_image_path, x, y)
     salida = calculo(raw_image_path, global_cropped_bite, global_cropped_guide, global_cropped_wedge, x, y, index)
     torender = html.Div([
-        html.H6('Contacto'),
-        html.Div(round(salida[0], 4)),
-        html.H6('Contacto cercano'),
-        html.Div(round(salida[1], 4)),
-        html.H6('Número de contactos'),
-        html.Div(round(salida[2], 4)),
+        html.H6(f'Contact: {round(salida[0], 4)}'),
+        # html.Div(round(salida[0], 4)),
+        html.H6(f'Close contact: {round(salida[1], 4)}'),
+        # html.Div(round(salida[1], 4)),
+        html.H6(f'Number of contacts: {round(salida[2], 4)}')
+        # html.Div(round(salida[2], 4)),
     ])
 
     contact_tables[index-1] = salida[3]

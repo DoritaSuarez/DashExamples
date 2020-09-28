@@ -407,8 +407,8 @@ html, body {
     }
 
     #upload-image div {
-        padding: 1rem 0 !important;
-        margin-bottom: 1.5rem !important;
+        /* padding: 1rem 0 !important; */
+        /* margin-bottom: 1.5rem !important; */
     }
 
     #sidebar section:nth-child(1) {
