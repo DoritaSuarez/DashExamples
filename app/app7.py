@@ -586,14 +586,29 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
 
 
 app.layout = html.Div([
-    html.H1(
-        'Occlusal Contact Analysis',
-        style={
-            'textAlign': 'center',
-            'margin': '48px 0',
-            'fontFamily': 'system-ui'
-        }
-    ),
+    dbc.Container([
+        dbc.Row([
+            dbc.Col(
+                html.H1(
+                    'Occlusal Contact Analysis',
+                    style={
+                        'textAlign': 'center',
+                        'margin': '48px 0',
+                        'fontFamily': 'system-ui'
+                    }
+                ), width=6, className="col-12 col-md-6"
+            ),
+            dbc.Col([
+                html.Img(src="assets\logos\CIRsalud 2018.png",style={"max-height": "70px"}),
+                html.Img(src="assets\logos\TEXAS A -M.png",style={"max-height": "70px"}),
+                html.Img(src="assets\logos\Ces.jpg",style={"max-height": "70px"})
+            ], width=6, className="col-12 col-md-6 d-flex justify-content-center"),
+        ], style={
+            "display": "flex",
+            "flex-wrap": "wrap",
+            "padding": "0px"
+        }),
+    ], style={"max-width": "1000px", "margin": "0px auto"}),
     dcc.Tabs(
         id="tabs",
         children=[
@@ -1329,5 +1344,5 @@ def transformLassoPoints(selected_data, index):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
-    # app.run_server(host='0.0.0.0', debug=True)
+    # app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', debug=True)
