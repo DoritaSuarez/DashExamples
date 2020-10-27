@@ -310,7 +310,7 @@ def create_figure_cropped_lasso(image_path, xs, ys):
 
 
 def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_index):
-    print('--------- BLOQUE calculo iniciado --------------------')
+    # print('--------- BLOQUE calculo iniciado --------------------')
     # print(cut_params)
     # cut_params = [(150,1100),(220,820),(450.40,800),(400,1200.18)]
     def change_contrast(img, level):
@@ -318,11 +318,11 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
         def contrast(c):
             return 128 + factor * (c - 128)
         return img.point(contrast)
-    print("Contraste")
+    # print("Contraste")
     image = Image.open(image_path)
     image_bw = image.convert(mode="L")  # Transform to black and white
     imagen_bit = image_bw.crop(bite_params)
-    print("Creacion de los bits")
+    # print("Creacion de los bits")
     # Searching contras automatic
     def searchContrast(image1, bite_params1):
         i = 0
@@ -344,7 +344,7 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
     bite_contrast = np.array(bite_contrast.crop(bite_params))
     bite = np.array(bite_contrast)
     bite = cv2.cvtColor(bite,cv2.COLOR_BGR2GRAY)
-    print("Cambio de contraste a bite")
+    # print("Cambio de contraste a bite")
     # GUIDE
     guide = np.array(image_bw.crop(guide_params))
     # WEDGE
@@ -353,7 +353,7 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
     wedge_contrast = np.array(wedge_contrast.crop(wedge_params))
     wedge = np.array(wedge_contrast)
     wedge = cv2.cvtColor(wedge,cv2.COLOR_BGR2GRAY)
-    print("Cambio de contrastte a wedge")
+    # print("Cambio de contraste a wedge")
     imo_w, imo_h = imagen_bit.size
     img_width = imo_w
     img_height = imo_h
@@ -361,8 +361,8 @@ def calculo(image_path, bite_params, guide_params, wedge_params, x, y, tooth_ind
     x = list(map(lambda x: round(x * 1 / scale_factor_a), x))
     y = list(map(lambda x: round(img_height - x * 1 / scale_factor_a), y))
     cut_params = list(zip(x, y))
-    print(cut_params)
-    print("Cut params:", cut_params)
+    # print(cut_params)
+    # print("Cut params:", cut_params)
         
     guide_cont = change_contrast(image, 100)
     guide_cont = np.array(guide_cont.crop(guide_params))
@@ -1315,11 +1315,27 @@ def display_selected_data(n_clicks, selectedData):
      Input('diente7-btn', 'n_clicks'),
      Input('diente8-btn', 'n_clicks')])
 def update_table(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        button_id = 'No clicks yet'
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
     torender_table = contact_init_table
     for table in contact_tables:
-        print("---------------------------- TABLES FOUND... -------------------")
-        print(table.to_string)
+        # print("---------------------------- TABLES FOUND... -------------------")
+        # print(button_id)
+        # print(table.to_string)
         torender_table = torender_table.append(table)
+        torender_table.loc[torender_table['tooth_id'] == 'Tooth # 1', 'tooth_id'] = 'RIGHT First premolar'
+        torender_table.loc[torender_table['tooth_id'] == 'Tooth # 2', 'tooth_id'] = 'RIGHT Second premolar'
+        torender_table.loc[torender_table['tooth_id'] == 'Tooth # 3', 'tooth_id'] = 'RIGHT First molar'
+        torender_table.loc[torender_table['tooth_id'] == 'Tooth # 4', 'tooth_id'] = 'RIGHT Second molar'
+        torender_table.loc[torender_table['tooth_id'] == 'Tooth # 5', 'tooth_id'] = 'LEFT First premolar'
+        torender_table.loc[torender_table['tooth_id'] == 'Tooth # 6', 'tooth_id'] = 'LEFT Second premolar'
+        torender_table.loc[torender_table['tooth_id'] == 'Tooth # 7', 'tooth_id'] = 'LEFT First molar'
+        torender_table.loc[torender_table['tooth_id'] == 'Tooth # 8', 'tooth_id'] = 'LEFT Second molar'
+
     return torender_table.to_dict('records')
 
 
